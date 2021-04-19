@@ -1,25 +1,26 @@
 package main
 
 import (
+	stdErr "errors"
 	"fmt"
 
 	"github.com/cockroachdb/errors"
-	"github.com/cockroachdb/errors/errutil"
 	"github.com/go-sql-driver/mysql"
 	_ "github.com/go-sql-driver/mysql"
 )
 
 var (
-	// ErrCloud  = stdErr.New("cloud provider failed")
-	ErrCloud = errutil.NewWithDepth(1, "cloud provider failed")
-	// ErrServer = stdErr.New("server failed")
-	ErrServer = errutil.NewWithDepth(1, "server failed")
+	ErrCloud = stdErr.New("cloud provider failed")
+	// ErrCloud = errutil.NewWithDepth(1, "cloud provider failed")
+	ErrServer = stdErr.New("server failed")
+	// ErrServer = errutil.NewWithDepth(1, "server failed")
 )
 
 func main() {
 	// fmt.Printf("err=%v", useCaseWithCombine())
-	fmt.Printf("err=%+v", useCaseWithMsg())
-	// fmt.Printf("err=%+v", useCaseWithCombine())
+	fmt.Printf("err=%+v", errors.Unwrap(useCaseWithMsg()))
+	// fmt.Printf("err=%+v", useCaseWithMsg())
+	// fmt.Printf("err=%+v", errors.Unwrap(useCaseWithCombine()))
 }
 
 func useCaseWithCombine() error {
