@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+//go:generate go test -trimpath -run=TestStacks_CountOK -v github.com/Min-Feng/goutils/errorX
 func TestStacks_CountOK(t *testing.T) {
 	topDefinedErr := New(10001, http.StatusInternalServerError, "system internal error")
 
@@ -44,7 +45,6 @@ func TestStacks_CountOK(t *testing.T) {
 		}
 		fmt.Println()
 	}
-	// go test -trimpath -run=TestExtractStack_CountOK -v idc-portal/pkg/errorX
 
 	var actualStackCount int
 	for _, stack := range stacks {
@@ -55,6 +55,7 @@ func TestStacks_CountOK(t *testing.T) {
 	assert.Equal(t, topDefinedErr, Cause(finalErr))
 }
 
+//go:generate go test -trimpath -run=TestStack_CountOK -v github.com/Min-Feng/goutils/errorX
 func TestStack_CountOK(t *testing.T) {
 	topDefinedErr := New(10001, http.StatusInternalServerError, "system internal error")
 
@@ -70,7 +71,6 @@ func TestStack_CountOK(t *testing.T) {
 	stack := Stack(finalErr)
 
 	// spew.Dump(stack)
-	// go test -trimpath -run=TestStack_CountOK -v idc-portal/pkg/errorX
 
 	expectedStackCount := 5
 	assert.Equal(t, expectedStackCount, len(stack))
