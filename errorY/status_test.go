@@ -1,4 +1,4 @@
-package errorX
+package errorY
 
 import (
 	"net/http"
@@ -11,10 +11,10 @@ func TestCode(t *testing.T) {
 	definedCode := 9478
 	definedErr := New(definedCode, http.StatusBadGateway, "not match ip")
 	fooErr := Wrap(definedErr, "foo")
-	barErr := WithMsgf(fooErr, "bar")
+	barErr := WrapMessage(fooErr, "bar")
 
 	assert.Equal(t, definedCode, Code(barErr))
-	assert.Equal(t, http.StatusBadGateway, HTTPCode(barErr))
+	assert.Equal(t, http.StatusBadGateway, HTTPStatus(barErr))
 }
 
 func TestSimpleInfo(t *testing.T) {

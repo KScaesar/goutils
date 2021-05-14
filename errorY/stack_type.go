@@ -1,11 +1,16 @@
-package errorX
+package errorY
 
-import "github.com/pkg/errors"
+import (
+	"github.com/pkg/errors"
+)
+
+// following context, from custom type
 
 type Frame string
 
-// StackTrace 將外部套件的型別, 改為我方系統的型別
 type StackTrace []Frame
+
+// following context, from pkg errors
 
 type pkgErrStack interface {
 	StackTrace() errors.StackTrace
