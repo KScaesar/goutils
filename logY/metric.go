@@ -20,7 +20,7 @@ func (l WrapperLogger) RecordHttpInfo(normal *HttpMetricNormal, debug *HttpMetri
 	log := l
 
 	if normal != nil {
-		log = log.
+		log = l.
 			Kind(KindHTTP).
 			HTTPMethod(normal.Method).
 			URL(normal.URL).
@@ -31,7 +31,7 @@ func (l WrapperLogger) RecordHttpInfo(normal *HttpMetricNormal, debug *HttpMetri
 	}
 
 	if debug != nil {
-		log = log.
+		log = l.
 			ReqBody(debug.ReqBody).
 			RespBody(debug.RespBody)
 	}

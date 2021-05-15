@@ -15,8 +15,7 @@ func BindPayload(c *gin.Context, obj interface{}) bool {
 		Err := errorY.Wrap(errorY.ErrInvalidParams, "bind payload: %v", err)
 
 		logY.FromCtx(GetStdContext(c)).
-			Kind(logY.KindHTTP).ErrCode(Err).
-			Prototype().Err(Err).Caller(1).Send()
+			Kind(logY.KindHTTP).Prototype().Err(Err).Caller(1).Send()
 
 		c.JSON(errorY.HTTPStatus(Err), NewErrorResponse(Err))
 		c.Abort()

@@ -90,13 +90,13 @@ func ErrorResponseMiddleware(c *gin.Context) {
 
 	log := logY.FromCtx(GetStdContext(c)).Kind(logY.KindApplication)
 
-	log.ErrCode(err).Prototype().Err(err).Send()
+	log.Err(err).Send()
 	c.JSON(errorY.HTTPStatus(err), NewErrorResponse(err))
 
 	if len(c.Errors) > 1 {
 		for i, ginErr := range c.Errors {
 			Err := errorY.Wrap(errorY.ErrSystem, "not should have many error: [%d] %v", i, ginErr)
-			log.ErrCode(Err).Prototype().Err(Err).Send()
+			log.Err(Err).Send()
 		}
 	}
 }

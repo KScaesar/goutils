@@ -15,17 +15,17 @@ func Logger() WrapperLogger {
 }
 
 func Debug() *zerolog.Event {
-	return _default.Prototype().Debug().Caller(1)
+	return _default.Debug().Caller(1)
 }
 
 func Info() *zerolog.Event {
-	return _default.Prototype().Info().Caller(1)
+	return _default.Info().Caller(1)
 }
 
-func Error(err error) *zerolog.Event {
-	return _default.ErrCode(err).Prototype().Err(err).Caller(1)
+func Err(err error) *zerolog.Event {
+	return _default.Err(err).Caller(1)
 }
 
 func Panic() *zerolog.Event {
-	return _default.Prototype().Panic().Caller(1)
+	return _default.Panic().Caller(1)
 }
