@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -39,13 +40,6 @@ func (w *respMultiWriter) Write(b []byte) (int, error) {
 func RecordHTTPInfoMiddleware(c *gin.Context) {
 	start := time.Now()
 
-	log := logY.FromCtx(GetStdContext(c)).
-		Kind(logY.KindHTTP).
-		HTTPMethod(c.Request.Method).
-		URL(c.Request.URL.Redacted()).
-		ClientIP(c.ClientIP()).
-		Referrer(c.Request.Referer())
-
 	var reqBody bytes.Buffer
 	var respWriter respMultiWriter
 	if logY.IsDebugLevel() {
@@ -58,23 +52,32 @@ func RecordHTTPInfoMiddleware(c *gin.Context) {
 
 	c.Next()
 
-	status := c.Writer.Status()
-	cost := time.Now().Sub(start)
-	log = log.HTTPStatus(status).CostTime(cost)
+	log := logY.FromCtx(GetStdContext(c))
 
-	if logY.IsDebugLevel() {
-		log.
-			ReqBody(reqBody.String()).
-			RespBody(respWriter.body.String()).
-			Prototype().Debug().Send()
+	m1 := &logY.HttpMetricNormal{
+		Method:   c.Request.Method,
+		URL:      c.Request.URL.Redacted(),
+		ClientIP: c.ClientIP(),
+		Referrer: c.Request.Referer(),
+		Status:   c.Writer.Status(),
+		TimeCost: time.Now().Sub(start),
 	}
 
-	if len(c.Errors) != 0 {
-		log.Prototype().Error().Send()
+	if logY.IsDebugLevel() {
+		m2 := &logY.HttpMetricDebug{
+			ReqBody:  reqBody.String(),
+			RespBody: respWriter.body.String(),
+		}
+		log.RecordHttpInfo(m1, m2).Prototype().Debug().Send()
+	}
+
+	status := c.Writer.Status()
+	if status >= http.StatusBadRequest {
+		log.RecordHttpInfo(m1, nil).Prototype().Error().Send()
 		return
 	}
 
-	log.Prototype().Info().Send()
+	log.RecordHttpInfo(m1, nil).Prototype().Info().Send()
 }
 
 func ErrorResponseMiddleware(c *gin.Context) {

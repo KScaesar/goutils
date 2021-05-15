@@ -48,7 +48,7 @@ func Init(cfg Config) {
 
 	case "human":
 		zerolog.TimeFieldFormat = CustomTimeFormat
-		_default = New(consoleWriter())
+		_default = New(NewConsoleWriter(os.Stdout))
 
 	default:
 		// 這裡簡化了參數, show 包含了 json 格式 及 io.Writer
@@ -61,9 +61,9 @@ func errMarshalStack(err error) interface{} {
 	return errorY.Stacks(err)
 }
 
-func consoleWriter() io.Writer {
-	writer := &zerolog.ConsoleWriter{
-		Out:        os.Stdout,
+func NewConsoleWriter(w io.Writer) io.Writer {
+	return &zerolog.ConsoleWriter{
+		Out:        w,
 		TimeFormat: CustomTimeFormat,
 		FormatCaller: func(i interface{}) string {
 			if i == nil { // 沒啟用 Caller 功能時, i == nil, 導致 i.(string) 發生錯誤
@@ -72,5 +72,4 @@ func consoleWriter() io.Writer {
 			return i.(string)
 		},
 	}
-	return writer
 }

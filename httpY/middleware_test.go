@@ -15,6 +15,7 @@ import (
 
 func TestMiddleware_BindPayloadFailed(t *testing.T) {
 	logY.TestingMode()
+	logY.FixBugMode()
 
 	gin.SetMode("release")
 	router := gin.New()

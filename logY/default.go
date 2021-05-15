@@ -8,8 +8,8 @@ var (
 	_default WrapperLogger
 )
 
-// Logger 若希望多個用戶同時寫入,
-// 不同的 io.Writer, 此函數不適合
+// Logger 提供一個快速使用的函數, 固定輸出到 os.Stdout,
+// 若希望同時輸出到多個 io.Writer, 此函數不適合, 請使用 New
 func Logger() WrapperLogger {
 	return _default
 }
