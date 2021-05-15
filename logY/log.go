@@ -5,8 +5,6 @@ import (
 	"time"
 
 	"github.com/rs/zerolog"
-
-	"github.com/Min-Feng/goutils/errorY"
 )
 
 func WrapPrototype(prototype zerolog.Logger) WrapperLogger {
@@ -73,11 +71,6 @@ func (l WrapperLogger) URL(url string) WrapperLogger {
 
 func (l WrapperLogger) CostTime(d time.Duration) WrapperLogger {
 	l.Logger = l.Logger.With().Str("cost", d.Truncate(time.Millisecond).String()).Logger()
-	return l
-}
-
-func (l WrapperLogger) ErrCode(err error) WrapperLogger {
-	l.Logger = l.Logger.With().Int("err_code", errorY.Code(err)).Logger()
 	return l
 }
 

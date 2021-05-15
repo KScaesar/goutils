@@ -4,14 +4,16 @@ import (
 	"io"
 	"os"
 
-	"github.com/Min-Feng/goutils/errorY"
-
 	"github.com/rs/zerolog"
 )
 
 const CustomTimeFormat = "2006-01-02 15:04:05-07:00"
 
 func init() {
+	zerolog.ErrorStackMarshaler = errorStackMarshaler
+	zerolog.ErrorMarshalFunc = errorMarshalFunc
+	zerolog.TimestampFieldName = "timestamp"
+
 	DefaultMode()
 }
 
@@ -23,6 +25,7 @@ func FixBugMode() {
 	SetGlobalLevel("debug")
 }
 
+// TestingMode 避免執行 go test, 出現 log 訊息
 func TestingMode() {
 	SetGlobalLevel("panic")
 }
@@ -33,9 +36,6 @@ type Config struct {
 }
 
 func Init(cfg Config) {
-	zerolog.ErrorStackMarshaler = errMarshalStack
-	zerolog.TimestampFieldName = "timestamp"
-
 	err := SetGlobalLevel(cfg.Level)
 	if err != nil {
 		panic(err)
@@ -55,10 +55,6 @@ func Init(cfg Config) {
 		// 為了讓之後 io.Writer, 可以替換
 		// 所以略過 default 設定
 	}
-}
-
-func errMarshalStack(err error) interface{} {
-	return errorY.Stacks(err)
 }
 
 func NewConsoleWriter(w io.Writer) io.Writer {

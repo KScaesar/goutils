@@ -9,7 +9,7 @@ func TraceIDFromCtx(ctx context.Context) string {
 	if ok {
 		return traceID
 	}
-	return ""
+	return "empty"
 }
 
 func TraceIDWithCtx(ctx context.Context, traceID string) context.Context {

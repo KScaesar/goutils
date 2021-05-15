@@ -12,36 +12,37 @@ import (
 	"github.com/Min-Feng/goutils/testingY"
 )
 
-func TestMiddleware_Success(t *testing.T) {
+func TestBindPayload_Failed(t *testing.T) {
 	// logY.FixBugMode()
 
 	gin.SetMode("release")
 	router := gin.New()
-	router.POST("/hello", TraceIDMiddleware, RecordHTTPInfoMiddleware, helloHandlerSuccess)
+	router.POST("/hello", RecordHTTPInfoMiddleware, bindFailedHandler)
 
-	body := bytes.NewBufferString(`{"name":"caesar"}`)
+	body := bytes.NewBuffer([]byte(`{"name":"caesar"}`))
 	resp, status := testingY.HttpClientDoJson(router, http.MethodPost, "/hello", body)
 
 	expectedResp := `
 {
-  "code": 0,
-  "msg": "ok",
-  "data": "hello caesar"
+  "code": 10002,
+  "msg": "bind payload: Key: 'Person.Age' Error:Field validation for 'Age' failed on the 'required' tag: invalid params",
+  "data": {}
 }`
 	assert.JSONEq(t, expectedResp, resp)
-	assert.Equal(t, http.StatusOK, status)
+	assert.Equal(t, http.StatusBadRequest, status)
 }
 
-func helloHandlerSuccess(c *gin.Context) {
+func bindFailedHandler(c *gin.Context) {
 	type Person struct {
 		Name string `json:"name"`
+		Age  int    `json:"age" binding:"required"`
 	}
 	payload := new(Person)
 	if !BindPayload(c, payload) {
 		return
 	}
 
-	time.Sleep(234 * time.Millisecond)
+	time.Sleep(281 * time.Millisecond)
 	resp := "hello " + payload.Name
 	c.JSON(http.StatusOK, NewNormalResponse(resp))
 }

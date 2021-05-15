@@ -55,6 +55,12 @@ func TestStacks(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, expectedStacks, stacks)
-	assert.Equal(t, topDefinedErr, errorY.Cause(finalErr))
+	for i := 0; i < 3; i++ {
+		assert.Equal(t, expectedStacks[0][i], stacks[0][i])
+	}
+	for i := 0; i < 2; i++ {
+		assert.Equal(t, expectedStacks[1][i], stacks[1][i])
+	}
+	assert.Len(t, expectedStacks, len(stacks))
+	assert.Len(t, expectedStacks[0], len(stacks[0]))
 }

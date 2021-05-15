@@ -7,6 +7,7 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
+	"github.com/tidwall/gjson"
 
 	"github.com/Min-Feng/goutils/errorY"
 	"github.com/Min-Feng/goutils/testingY"
@@ -21,25 +22,30 @@ func TestError(t *testing.T) {
 	zerolog.TimeFieldFormat = CustomTimeFormat // DefaultMode() show=human, 影響 zerolog.TimeFieldFormat
 	zerolog.TimestampFunc = testingY.FakeTimeNow("2021-12-14")
 
-	err := errorY.New(8787, http.StatusInternalServerError, "json failed")
-	Err := errorY.Wrap(err, "unit test")
-	Error(Err).Send()
-
 	expected := `
 {
   "level": "error",
-  "err_code": 8787,
-  "error": "unit test: json failed",
-  "caller": "github.com/Min-Feng/goutils/logY/default_test.go:26",
+  "caller": "github.com/Min-Feng/goutils/logY/default_test.go:44",
   "timestamp": "2021-12-14 00:00:00+08:00",
+  "error": {
+    "msg": "unit test: json failed",
+    "code": 8787
+  },
   "stack": [
     [
-      "github.com/Min-Feng/goutils/logY.TestError github.com/Min-Feng/goutils/logY/default_test.go:25 ",
-      "testing.tRunner testing/testing.go:1123 ",
-      "runtime.goexit runtime/asm_amd64.s:1374 "
+      "github.com/Min-Feng/goutils/logY.TestError github.com/Min-Feng/goutils/logY/default_test.go:44 ",
+      "testing.tRunner testing/testing.go:1193 ",
+      "runtime.goexit runtime/asm_amd64.s:1371 "
     ]
   ]
 }`
 
-	assert.JSONEq(t, expected, writer.String())
+	err := errorY.New(8787, http.StatusInternalServerError, "json failed")
+	Err(errorY.Wrap(err, "unit test")).Send()
+	actual := writer.String()
+
+	errPath := "error"
+	assert.JSONEq(t, gjson.Get(expected, errPath).Raw, gjson.Get(actual, errPath).Raw)
+	stackPath := "stack.0.0"
+	assert.Equal(t, gjson.Get(expected, stackPath).Raw, gjson.Get(actual, stackPath).Raw)
 }

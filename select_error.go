@@ -12,7 +12,7 @@ func SelectError(log *logY.WrapperLogger, major error, abandon error) error {
 	}
 
 	abandonErr := errorY.WrapMessage(abandon, "[abandon error]")
-	log.ErrCode(abandonErr).Prototype().Err(abandonErr).Caller(1).Send()
+	log.Err(abandonErr).Caller(1).Send()
 
 	return errorY.WrapMessage(major, "[select error]")
 }

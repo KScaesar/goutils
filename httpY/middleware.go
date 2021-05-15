@@ -10,12 +10,11 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/Min-Feng/goutils"
-	"github.com/Min-Feng/goutils/errorY"
 	"github.com/Min-Feng/goutils/logY"
 )
 
 func TraceIDMiddleware(c *gin.Context) {
-	ctx := c.Request.Context()
+	ctx := GetStdContext(c)
 
 	traceID := c.GetHeader("X-TraceID")
 	if traceID == "" {
@@ -78,25 +77,4 @@ func RecordHTTPInfoMiddleware(c *gin.Context) {
 	}
 
 	log.RecordHttpInfo(m1, nil).Prototype().Info().Send()
-}
-
-func ErrorResponseMiddleware(c *gin.Context) {
-	c.Next()
-
-	if len(c.Errors) == 0 {
-		return
-	}
-	err := c.Errors[0].Err
-
-	log := logY.FromCtx(GetStdContext(c)).Kind(logY.KindApplication)
-
-	log.ErrCode(err).Prototype().Err(err).Send()
-	c.JSON(errorY.HTTPStatus(err), NewErrorResponse(err))
-
-	if len(c.Errors) > 1 {
-		for i, ginErr := range c.Errors {
-			Err := errorY.Wrap(errorY.ErrSystem, "not should have many error: [%d] %v", i, ginErr)
-			log.ErrCode(Err).Prototype().Err(Err).Send()
-		}
-	}
 }
