@@ -1,6 +1,7 @@
 package goutils
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,7 +17,7 @@ func TestSelectError(t *testing.T) {
 	err := repo()
 	if err != nil {
 		if rollbackErr := rollback(); rollbackErr != nil {
-			majorErr = SelectError(nil, err, rollbackErr)
+			majorErr = SelectError(context.TODO(), err, rollbackErr)
 		}
 	}
 

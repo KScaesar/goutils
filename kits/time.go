@@ -1,4 +1,4 @@
-package kit
+package kits
 
 import (
 	"time"
@@ -23,5 +23,5 @@ func TimeParse(timeLayout string) (t time.Time, err error) {
 			return t, nil
 		}
 	}
-	return t, errorY.WrapStack(errorY.ErrSystem)
+	return t, errorY.Wrap(errorY.ErrSystem, err.Error())
 }

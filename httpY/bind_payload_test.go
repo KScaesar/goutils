@@ -17,7 +17,7 @@ func TestBindPayload_Failed(t *testing.T) {
 
 	gin.SetMode("release")
 	router := gin.New()
-	router.POST("/hello", RecordHTTPInfoMiddleware, bindFailedHandler)
+	router.POST("/hello", TraceIDMiddleware, RecordHTTPInfoMiddleware, bindFailedHandler)
 
 	body := bytes.NewBuffer([]byte(`{"name":"caesar"}`))
 	resp, status := testingY.HttpClientDoJson(router, http.MethodPost, "/hello", body)

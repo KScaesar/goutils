@@ -1,15 +1,15 @@
 package goutils
 
 import (
+	"context"
+
 	"github.com/Min-Feng/goutils/errorY"
 	"github.com/Min-Feng/goutils/logY"
 )
 
-func SelectError(log *logY.WrapperLogger, major error, abandon error) error {
-	if log == nil {
-		freshLog := logY.Logger()
-		log = &freshLog
-	}
+// SelectError 從 ctx 取得 log 進行 abandon error 的 stack 紀錄
+func SelectError(ctx context.Context, major error, abandon error) error {
+	log := logY.FromCtx(ctx)
 
 	abandonErr := errorY.WrapMessage(abandon, "[abandon error]")
 	log.Err(abandonErr).Caller(1).Send()
