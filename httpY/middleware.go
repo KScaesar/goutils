@@ -9,12 +9,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/Min-Feng/goutils/kits"
 	"github.com/Min-Feng/goutils/logY"
 )
 
 func TraceIDMiddleware(c *gin.Context) {
-	traceID, ctx := kits.TraceIDFromHTTP(c.Request, c.Writer)
+	traceID, ctx := logY.TraceIDFromHTTP(c.Request, c.Writer)
 	SetStdContext(
 		c,
 		logY.Logger().TraceID(traceID).WithCtx(ctx),
