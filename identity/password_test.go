@@ -2,7 +2,6 @@ package identity
 
 import (
 	"encoding/json"
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -29,8 +28,9 @@ func TestPlainPassword_rule_Failed_Length_Less_8(t *testing.T) {
 }
 
 func TestHashedPassword_MarshalText(t *testing.T) {
-	hash, err := NewPlainPassword("qazwsx123").Bcrypt()
-	assert.NoError(t, err)
+	hash := HashedPassword{
+		bytes: []byte("$2a$10$OoYhOY9FHNTT4N1n5F2L3eqM9TkilUm5FKf0KF1RI53SqdRbXficu"),
+	}
 
 	type PayLoad struct {
 		HashedPW HashedPassword `json:"password"`
@@ -38,16 +38,17 @@ func TestHashedPassword_MarshalText(t *testing.T) {
 	actualJson, err := json.Marshal(PayLoad{HashedPW: hash})
 	assert.NoError(t, err)
 
-	expected := []byte(fmt.Sprintf(`{"password":"%v"}`, hash.String()))
+	expected := []byte(`{"password":"$2a$10$OoYhOY9FHNTT4N1n5F2L3eqM9TkilUm5FKf0KF1RI53SqdRbXficu"}`)
 	assert.Equal(t, expected, actualJson)
 }
 
 func TestHashedPassword_Verify(t *testing.T) {
-	plainPW := "qazwsx123"
-	hash, err := NewPlainPassword(plainPW).Bcrypt()
-	assert.NoError(t, err)
+	hash := HashedPassword{
+		bytes: []byte("$2a$10$8wfdlrkWi2QnZtfIs6jIWOZjGW3r6SVzTMv0O83JrGG42xYwddLym"),
+	}
 
+	plainPW := "qazwsx123"
 	plain := NewPlainPassword(plainPW)
-	err = hash.VerifyPassword(plain)
+	err := hash.VerifyPassword(plain)
 	assert.NoError(t, err)
 }
