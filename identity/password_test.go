@@ -27,6 +27,18 @@ func TestPlainPassword_rule_Failed_Length_Less_8(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestPlainPassword_Bcrypt(t *testing.T) {
+	hash1, err := NewPlainPassword("123QWEasd").Bcrypt()
+	assert.NoError(t, err)
+	hash2, err := NewPlainPassword("123QWEasd").Bcrypt()
+	assert.NoError(t, err)
+	assert.NotEqualf(t, hash2, hash1, "同樣的明碼, 每次產生的 hash 都不同")
+
+	plain := NewPlainPassword("123QWEasd")
+	assert.NoError(t, hash1.VerifyPassword(plain))
+	assert.NoError(t, hash2.VerifyPassword(plain))
+}
+
 func TestHashedPassword_MarshalText(t *testing.T) {
 	hash := HashedPassword{
 		bytes: []byte("$2a$10$OoYhOY9FHNTT4N1n5F2L3eqM9TkilUm5FKf0KF1RI53SqdRbXficu"),
