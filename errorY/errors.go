@@ -6,12 +6,12 @@ import (
 
 var (
 	ErrSystem = New(
-		10001,
+		1001,
 		http.StatusInternalServerError,
 		"system failed",
 	)
 	ErrInvalidParams = New(
-		10002,
+		1002,
 		http.StatusBadRequest,
 		"invalid params",
 	)

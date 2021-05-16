@@ -14,16 +14,11 @@ func init() {
 			AccessInterval:  1 * time.Hour,
 			RefreshInterval: 7 * 24 * time.Hour,
 		},
-		Password: PasswordConfig{
-			Key:  []byte(""),
-			Salt: []byte(""),
-		},
 	})
 }
 
 type Config struct {
-	Token    TokenConfig
-	Password PasswordConfig
+	Token TokenConfig
 }
 
 func Init(cfg Config) {

@@ -6,7 +6,7 @@ import (
 
 type AccountParam struct {
 	UserName string
-	Password Password
+	Password HashedPassword
 	Email    string
 }
 
@@ -22,6 +22,6 @@ func NewAccount(param *AccountParam) Account {
 type Account struct {
 	UserID   base.ID
 	UserName string
-	Password Password
+	Password HashedPassword
 	Email    string
 }
