@@ -21,7 +21,7 @@ func TestSendErrorResponse(t *testing.T) {
 
 	expectedResp := `
 {
-  "code": 10001,
+  "code": 1001,
   "msg": "sql statement invalid: system failed",
   "data": {}
 }`

@@ -24,7 +24,7 @@ func TestBindPayload_Failed(t *testing.T) {
 
 	expectedResp := `
 {
-  "code": 10002,
+  "code": 1002,
   "msg": "bind payload: Key: 'Person.Age' Error:Field validation for 'Age' failed on the 'required' tag: invalid params",
   "data": {}
 }`
