@@ -54,7 +54,7 @@ func TestHashedPassword_MarshalText(t *testing.T) {
 	assert.Equal(t, expected, actualJson)
 }
 
-func TestHashedPassword_Verify(t *testing.T) {
+func TestHashedPassword_VerifyPassword(t *testing.T) {
 	hash := HashedPassword{
 		bytes: []byte("$2a$10$8wfdlrkWi2QnZtfIs6jIWOZjGW3r6SVzTMv0O83JrGG42xYwddLym"),
 	}
