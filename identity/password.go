@@ -21,16 +21,17 @@ var (
 	_ fmt.Stringer             = (*HashedPassword)(nil)
 )
 
+// HashedPassword is generated from PlainPassword.Bcrypt
 type HashedPassword struct {
 	bytes []byte
 }
 
-func (pw HashedPassword) VerifyPassword(plain PlainPassword) error {
+func (pw HashedPassword) VerifyPassword(plain PlainPassword) bool {
 	err := bcrypt.CompareHashAndPassword(pw.bytes, plain.bytes)
 	if err != nil {
-		return errorY.Wrap(ErrAuthentication, err.Error())
+		return false
 	}
-	return nil
+	return true
 }
 
 // Value 實現 driver.Value,
@@ -63,12 +64,22 @@ func (pw HashedPassword) String() string {
 }
 
 func NewPlainPassword(plainPW string) PlainPassword {
-	return PlainPassword{
-		// 因為這個 []byte 會被送到其他函數進行操作, 所以不能進行 string to []byte 的特例優化
-		// bytes:  *(*[]byte)(unsafe.Pointer(&plainPW)),
+	pw := PlainPassword{
+		// 因為這個 []byte 會被送到其他函數進行操作
+		// 所以不能進行 string to []byte 的特例優化, 因為字串的不可變性
+		// bytes:  *(*[]byte)(unsafe.Pointer(&plainPW))
 		bytes:  []byte(plainPW),
 		string: plainPW,
 	}
+
+	// 猶豫是否應該回傳 error
+	// 但會讓 api 不好用, 無法達成類似這樣的呼叫, NewPlainPassword("123QWEasd").Bcrypt()
+	// 如果只有一個檢查點 rule(), 感覺可以先不用回傳 error
+	// 只要在少數幾個 method 手動呼叫 rule()
+	// 如果要檢查的東西太多了, 或許就應該好好回傳 error
+	// pw.err = pw.rule()
+
+	return pw
 }
 
 type PlainPassword struct {
@@ -78,7 +89,7 @@ type PlainPassword struct {
 
 func (pw PlainPassword) Bcrypt() (HashedPassword, error) {
 	if err := pw.rule(); err != nil {
-		return HashedPassword{}, errorY.WrapMessage(err, "violation of rules")
+		return HashedPassword{}, err
 	}
 
 	const cost = 10
@@ -99,14 +110,26 @@ func (pw *PlainPassword) UnmarshalText(text []byte) error {
 }
 
 func (pw PlainPassword) String() string {
+	if err := pw.rule(); err != nil {
+		return fmt.Sprintf("%v: %v", pw.string, err)
+	}
 	return pw.string
 }
 
-func (pw PlainPassword) rule() error {
-	var plainPWRuler = validator.New()
-	err := plainPWRuler.Var(pw.string, "gte=8,alphanum")
-	if err != nil {
-		return errorY.Wrap(errorY.ErrInvalidParams, err.Error())
+func (pw PlainPassword) rule() (Err error) {
+	defer func() {
+		if Err != nil {
+			Err = errorY.Wrap(errorY.ErrInvalidParams, "violation of rules: %v", Err)
+		}
+	}()
+
+	plainPWRuler := validator.New()
+
+	if err := plainPWRuler.Var(pw.string, "alphanum"); err != nil {
+		return err
+	}
+	if err := plainPWRuler.Var(pw.string, "min=8,max=24"); err != nil {
+		return err
 	}
 	return nil
 }

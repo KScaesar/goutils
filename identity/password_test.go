@@ -28,18 +28,18 @@ func TestPlainPassword_rule_Failed_Length_Less_8(t *testing.T) {
 }
 
 func TestPlainPassword_Bcrypt(t *testing.T) {
-	hash1, err := NewPlainPassword("123QWEasd").Bcrypt()
-	assert.NoError(t, err)
-	hash2, err := NewPlainPassword("123QWEasd").Bcrypt()
-	assert.NoError(t, err)
+	hash1, _ := NewPlainPassword("123QWEasd").Bcrypt()
+	hash2, _ := NewPlainPassword("123QWEasd").Bcrypt()
 	assert.NotEqualf(t, hash2, hash1, "同樣的明碼, 每次產生的 hash 都不同")
 
 	plain := NewPlainPassword("123QWEasd")
-	assert.NoError(t, hash1.VerifyPassword(plain))
-	assert.NoError(t, hash2.VerifyPassword(plain))
+	assert.True(t, hash1.VerifyPassword(plain))
+	assert.True(t, hash2.VerifyPassword(plain))
 }
 
 func TestHashedPassword_MarshalText(t *testing.T) {
+	// 保存的值 是 $2a$10$OoYhOY9FHNTT4N1n5F2L3eqM9TkilUm5FKf0KF1RI53SqdRbXficu
+	// 不包含 雙引號
 	hash := HashedPassword{
 		bytes: []byte("$2a$10$OoYhOY9FHNTT4N1n5F2L3eqM9TkilUm5FKf0KF1RI53SqdRbXficu"),
 	}
@@ -61,6 +61,5 @@ func TestHashedPassword_VerifyPassword(t *testing.T) {
 
 	plainPW := "qazwsx123"
 	plain := NewPlainPassword(plainPW)
-	err := hash.VerifyPassword(plain)
-	assert.NoError(t, err)
+	assert.True(t, hash.VerifyPassword(plain))
 }
