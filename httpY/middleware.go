@@ -57,7 +57,7 @@ func RecordHTTPInfoMiddleware(c *gin.Context) {
 		TimeCost: time.Now().Sub(start),
 	}
 
-	if logY.IsDebugLevel() {
+	if logY.IsDebugLevel() && !bytes.Contains(reqBody.Bytes(), []byte("password")) {
 		m2 := &logY.HttpMetricDebug{
 			ReqBody:  reqBody.String(),
 			RespBody: respWriter.body.String(),
