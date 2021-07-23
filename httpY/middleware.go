@@ -2,6 +2,7 @@ package httpY
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -13,12 +14,23 @@ import (
 )
 
 func TraceIDMiddleware(c *gin.Context) {
-	traceID, ctx := logY.TraceIDFromHTTP(c.Request, c.Writer)
-	SetStdContext(
-		c,
-		logY.Logger().TraceID(traceID).WithCtx(ctx),
-	)
+	traceIDCtx, traceID := NewTraceIDCtx(c.Request, c.Writer)
+	logger := logY.Logger().TraceID(traceID)
+	c.Request = c.Request.WithContext(logY.NewLogContext(traceIDCtx, logger))
 	c.Next()
+}
+
+const TraceIDHeaderKey = "X-Trace"
+
+func NewTraceIDCtx(r *http.Request, w http.ResponseWriter) (traceIDCtx context.Context, traceID string) {
+	traceID = r.Header.Get(TraceIDHeaderKey)
+	if traceID == "" {
+		traceID = logY.NewTraceID()
+	}
+
+	w.Header().Add(TraceIDHeaderKey, traceID)
+	traceIDCtx = logY.NewTraceIDCtx(r.Context(), traceID)
+	return
 }
 
 type respMultiWriter struct {
@@ -32,7 +44,7 @@ func (w *respMultiWriter) Write(b []byte) (int, error) {
 }
 
 func RecordHTTPInfoMiddleware() gin.HandlerFunc {
-	// keywords 若放在匿名函數裡面, 會造成重複 allocate memory, 利用閉包鎖住變數位址
+	// keywords 若放在匿名函數 ContainKeyword 裡面, 會造成重複 allocate memory, 利用閉包鎖住變數位址
 	keywords := [][]byte{
 		[]byte("password"),
 	}
@@ -61,7 +73,7 @@ func RecordHTTPInfoMiddleware() gin.HandlerFunc {
 
 		c.Next()
 
-		log := logY.FromCtx(GetStdContext(c))
+		log := logY.FromCtx(c.Request.Context())
 
 		m1 := &logY.HttpMetricNormal{
 			Method:   c.Request.Method,

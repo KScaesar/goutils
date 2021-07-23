@@ -16,7 +16,7 @@ func SendErrorResponseBase(c *gin.Context, err error, skip int, kind logY.Kind) 
 		return
 	}
 
-	logY.FromCtx(GetStdContext(c)).
+	logY.FromCtx(c.Request.Context()).
 		Kind(kind).
 		Prototype().Err(err).Caller(skip + 1).Send()
 
