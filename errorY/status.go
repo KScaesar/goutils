@@ -6,19 +6,31 @@ import (
 	"github.com/pkg/errors"
 )
 
+const UndefinedCode = -1
+
 func Code(err error) int {
-	base, ok := errors.Cause(err).(*baseError)
-	if !ok {
-		return -1
+	if err == nil {
+		return 0
 	}
+
+	if IsUndefinedError(err) {
+		return UndefinedCode
+	}
+
+	base := errors.Cause(err).(*baseError)
 	return base.code
 }
 
 func HTTPStatus(err error) int {
-	base, ok := errors.Cause(err).(*baseError)
-	if !ok {
+	if err == nil {
+		return http.StatusOK
+	}
+
+	if IsUndefinedError(err) {
 		return http.StatusInternalServerError
 	}
+
+	base := errors.Cause(err).(*baseError)
 	return base.httpStatus
 }
 
@@ -41,10 +53,14 @@ func SimpleInfo(err error) string {
 		current = causeErrFactory.Unwrap()
 		msgErr = before
 	}
+
 	return "no error, this all OK"
 }
 
 // Description 顯示初始錯誤 文字描述
 func Description(err error) string {
+	if err == nil {
+		return "ok"
+	}
 	return errors.Cause(err).Error()
 }

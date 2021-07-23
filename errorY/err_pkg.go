@@ -12,8 +12,8 @@ func NewPkgError(msg string) error {
 // Wrap 等效 WrapMessage + WrapStack,
 // 最好在底層元件使用, 然後往上傳遞,
 // error 傳遞的過程, 儘量不再使用 Wrap
-func Wrap(err error, format string, args ...interface{}) error {
-	return errors.Wrapf(err, format, args...)
+func Wrap(err error, msg string, args ...interface{}) error {
+	return errors.Wrapf(err, msg, args...)
 }
 
 // WrapMessage 通常用在 error 傳遞過程途中,

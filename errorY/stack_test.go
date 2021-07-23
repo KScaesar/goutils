@@ -17,18 +17,18 @@ func TestStacks(t *testing.T) {
 		infraErr := errorY.NewStdError("connect fail")
 		return errorY.Wrap(topDefinedErr, infraErr.Error())
 	}
-	rollback := func(error) error {
+	rollback := func() error {
 		return errorY.NewStdError("data center bang")
 	}
 	useCase := func() error {
 		repoErr := repo()
 		if repoErr != nil {
-			fixErr := rollback(repoErr)
-			if fixErr != nil {
+			rollbackErr := rollback()
+			if rollbackErr != nil {
 				// 遇到第二個 error 或許可以用 Wrap 再次包裝 保留 stack 訊息
-				// 並把 次要錯誤(fixErr)的文字訊息 加入到 主要錯誤(repoErr)
-				// 若想保留 fixErr stack, 可以考慮在此處加上 log
-				return errorY.Wrap(repoErr, "update entity failed: %v", fixErr)
+				// 並把 次要錯誤(rollbackErr)的文字訊息 加入到 主要錯誤(repoErr)
+				// 若想保留 rollbackErr stack, 可以考慮在此處加上 log
+				return errorY.Wrap(repoErr, "update entity failed: %v", rollbackErr)
 			}
 
 			// 如果只是單一錯誤往上傳遞 只用 WithMsg 增加文字訊息就好
