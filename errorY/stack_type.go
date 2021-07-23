@@ -4,13 +4,11 @@ import (
 	"github.com/pkg/errors"
 )
 
-// the following, from custom type
-
+// Frame is data from errors.Frame
 type Frame string
 
+// StackTrace is data from pkgErrStack
 type StackTrace []Frame
-
-// the following, from pkg errors
 
 type pkgErrStack interface {
 	StackTrace() errors.StackTrace
