@@ -51,12 +51,11 @@ func (uow *uowGorm) ManualStart(ctx context.Context, txFn func(txCtx context.Con
 		ctx = context.Background()
 	}
 
-	tx := uow.wrapperDB.Unwrap().Begin()
-	if err := tx.Error; err != nil {
+	uow.tx = uow.wrapperDB.Unwrap().Begin()
+	if err := uow.tx.Error; err != nil {
 		return errorY.Wrap(errorY.ErrSystem, err.Error())
 	}
 
-	uow.tx = tx
 	txCtx := uow.wrapperDB.NewTxContext(ctx, uow.tx)
 	return txFn(txCtx)
 }
