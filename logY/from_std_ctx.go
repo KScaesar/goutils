@@ -4,21 +4,27 @@ import (
 	"context"
 )
 
-type logKey struct{}
-
 // example:
 // https://pkg.go.dev/github.com/rs/zerolog#Logger.WithContext
 // https://pkg.go.dev/github.com/rs/zerolog#Logger.UpdateContext
 
-func FromCtx(ctx context.Context) WrapperLogger {
-	logger, ok := ctx.Value(logKey{}).(*WrapperLogger)
+type logKey struct{}
+
+func NewLogContext(ctx context.Context, l WrapperLogger) (logCtx context.Context) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	return context.WithValue(ctx, logKey{}, &l)
+}
+
+func FromCtx(logCtx context.Context) WrapperLogger {
+	if logCtx == nil {
+		return Logger()
+	}
+
+	logger, ok := logCtx.Value(logKey{}).(*WrapperLogger)
 	if ok {
 		return *logger
 	}
 	return Logger()
-}
-
-// WithCtx 不要誤用 zerolog.Logger.WithContext, 通常會使用 自定義的 WrapperLogger.WithCtx
-func (l WrapperLogger) WithCtx(ctx context.Context) context.Context {
-	return context.WithValue(ctx, logKey{}, &l)
 }

@@ -13,10 +13,10 @@ import (
 	"github.com/Min-Feng/goutils/testingY"
 )
 
-//go:generate go test -trimpath -run=Error -v github.com/Min-Feng/goutils/logY
+//go:generate go test -trimpath -run=TestError -v github.com/Min-Feng/goutils/logY
 func TestError(t *testing.T) {
 	writer := &bytes.Buffer{}
-	_default = New(writer)
+	default_ = New(writer)
 	defer DefaultMode()
 
 	zerolog.TimeFieldFormat = CustomTimeFormat // DefaultMode() show=human, 影響 zerolog.TimeFieldFormat

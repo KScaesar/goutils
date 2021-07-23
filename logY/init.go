@@ -44,11 +44,11 @@ func Init(cfg Config) {
 	switch cfg.Show {
 	case "json":
 		zerolog.TimeFieldFormat = zerolog.TimeFormatUnixMs
-		_default = New(os.Stdout)
+		default_ = New(os.Stdout)
 
 	case "human":
 		zerolog.TimeFieldFormat = CustomTimeFormat
-		_default = New(NewConsoleWriter(os.Stdout))
+		default_ = New(NewConsoleWriter(os.Stdout))
 
 	default:
 		// 這裡簡化了參數, show 包含了 json 格式 及 io.Writer
