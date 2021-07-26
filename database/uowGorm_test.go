@@ -13,7 +13,7 @@ import (
 
 func Test_uowGorm_AutoStart(t *testing.T) {
 	fixture := testFixture{}
-	db := fixture.gormMysql(fixture.mysqlConnectConfig())
+	db := fixture.mysqlGorm(fixture.mysqlConnectConfig())
 
 	// https://gorm.io/docs/migration.html#Tables
 	sqlBookConfig := &sqlBook{}
@@ -52,19 +52,11 @@ func Test_uowGorm_AutoStart(t *testing.T) {
 }
 
 type sqlBook struct {
-	// DomainBook 必須設為 public
-	// 才能夠被 gorm.Migrator().CreateTable 感知
-	// 因為 reflect 無法對 unexported field 進行處理
 	DomainBook
 }
 
 func (s *sqlBook) TableName() string {
 	return "testing_books"
-}
-
-type DomainBook struct {
-	ID   int
-	Name string `gorm:"type:varchar(50)"`
 }
 
 type bookRepo struct {

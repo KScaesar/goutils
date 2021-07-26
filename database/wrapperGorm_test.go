@@ -13,7 +13,7 @@ import (
 //go:generate go test -v -tags=integration -run TestWrapperGorm_EnableTransaction
 func TestWrapperGorm_EnableTransaction(t *testing.T) {
 	fixture := testFixture{}
-	db := fixture.gormMysql(fixture.mysqlConnectConfig())
+	db := fixture.mysqlGorm(fixture.mysqlConnectConfig())
 
 	tx := db.Unwrap().Begin()
 	defer tx.Commit()
@@ -31,8 +31,8 @@ func TestWrapperGorm_EnableTransaction(t *testing.T) {
 func TestWrapperGorm_EnableTransaction_but_different_database(t *testing.T) {
 	fixture := testFixture{}
 	cfg := fixture.mysqlConnectConfig()
-	db1 := fixture.gormMysql(cfg)
-	db2 := fixture.gormMysql(cfg)
+	db1 := fixture.mysqlGorm(cfg)
+	db2 := fixture.mysqlGorm(cfg)
 
 	tx1 := db1.Unwrap().Begin()
 	defer tx1.Commit()
@@ -48,7 +48,7 @@ func TestWrapperGorm_EnableTransaction_but_different_database(t *testing.T) {
 
 func TestWrapperGorm_NoTransaction_when_ctx_is_nil(t *testing.T) {
 	fixture := testFixture{}
-	db := fixture.gormMysql(fixture.mysqlConnectConfig())
+	db := fixture.mysqlGorm(fixture.mysqlConnectConfig())
 
 	actualProcessor := db.GetTxFromCtxAndSelectProcessor(nil)
 
@@ -58,7 +58,7 @@ func TestWrapperGorm_NoTransaction_when_ctx_is_nil(t *testing.T) {
 
 func TestWrapperGorm_NoTransaction_when_ctx_not_nil(t *testing.T) {
 	fixture := testFixture{}
-	db := fixture.gormMysql(fixture.mysqlConnectConfig())
+	db := fixture.mysqlGorm(fixture.mysqlConnectConfig())
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
