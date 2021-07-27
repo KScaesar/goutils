@@ -41,7 +41,7 @@ func (wrapper *WrapperGorm) GetTxFromCtxAndSelectProcessor(txCtx context.Context
 	key := wrapper
 	tx, ok := txCtx.Value(key).(*gorm.DB)
 	if ok {
-		return tx // NewTxContext 的時候, 已經執行過 gorm.DB WithContext
+		return tx
 	}
 	return wrapper.Unwrap()
 }
