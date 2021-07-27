@@ -26,8 +26,8 @@ type HashedPassword struct {
 	bytes []byte
 }
 
-func (pw HashedPassword) VerifyPassword(plain PlainPassword) bool {
-	err := bcrypt.CompareHashAndPassword(pw.bytes, plain.bytes)
+func (pw HashedPassword) VerifyPassword(plainPW string) bool {
+	err := bcrypt.CompareHashAndPassword(pw.bytes, []byte(plainPW))
 	if err != nil {
 		return false
 	}
@@ -74,10 +74,10 @@ func NewPlainPassword(plainPW string) PlainPassword {
 
 	// 猶豫是否應該回傳 error
 	// 但會讓 api 不好用, 無法達成類似這樣的呼叫, NewPlainPassword("123QWEasd").Bcrypt()
-	// 如果只有一個檢查點 rule(), 感覺可以先不用回傳 error
-	// 只要在少數幾個 method 手動呼叫 rule()
+	// 如果只有一個檢查點 CheckRule(), 感覺可以先不用回傳 error
+	// 只要在少數幾個 method 手動呼叫 CheckRule()
 	// 如果要檢查的東西太多了, 或許就應該好好回傳 error
-	// pw.err = pw.rule()
+	// pw.err = pw.CheckRule()
 
 	return pw
 }
@@ -88,7 +88,7 @@ type PlainPassword struct {
 }
 
 func (pw PlainPassword) Bcrypt() (HashedPassword, error) {
-	if err := pw.rule(); err != nil {
+	if err := pw.CheckRule(); err != nil {
 		return HashedPassword{}, err
 	}
 
@@ -103,23 +103,10 @@ func (pw PlainPassword) Bcrypt() (HashedPassword, error) {
 	}, nil
 }
 
-func (pw *PlainPassword) UnmarshalText(text []byte) error {
-	pw.bytes = text
-	pw.string = *(*string)(unsafe.Pointer(&text))
-	return pw.rule()
-}
-
-func (pw PlainPassword) String() string {
-	if err := pw.rule(); err != nil {
-		return fmt.Sprintf("%v: %v", pw.string, err)
-	}
-	return pw.string
-}
-
-func (pw PlainPassword) rule() (Err error) {
+func (pw PlainPassword) CheckRule() (Err error) {
 	defer func() {
 		if Err != nil {
-			Err = errorY.Wrap(errorY.ErrInvalidParams, "violation of rules: %v", Err)
+			Err = errorY.Wrap(errorY.ErrInvalidParams, "violation of password rules: %v", Err)
 		}
 	}()
 
@@ -132,4 +119,17 @@ func (pw PlainPassword) rule() (Err error) {
 		return err
 	}
 	return nil
+}
+
+func (pw *PlainPassword) UnmarshalText(text []byte) error {
+	pw.bytes = text
+	pw.string = *(*string)(unsafe.Pointer(&text))
+	return pw.CheckRule()
+}
+
+func (pw PlainPassword) String() string {
+	if err := pw.CheckRule(); err != nil {
+		return fmt.Sprintf("%v: %v", pw.string, err)
+	}
+	return pw.string
 }

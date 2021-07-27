@@ -32,7 +32,7 @@ func TestPlainPassword_Bcrypt(t *testing.T) {
 	hash2, _ := NewPlainPassword("123QWEasd").Bcrypt()
 	assert.NotEqualf(t, hash2, hash1, "同樣的明碼, 每次產生的 hash 都不同")
 
-	plain := NewPlainPassword("123QWEasd")
+	plain := "123QWEasd"
 	assert.True(t, hash1.VerifyPassword(plain))
 	assert.True(t, hash2.VerifyPassword(plain))
 }
@@ -55,11 +55,16 @@ func TestHashedPassword_MarshalText(t *testing.T) {
 }
 
 func TestHashedPassword_VerifyPassword(t *testing.T) {
+	type PayLoad struct {
+		Password string `json:"password"`
+	}
+	buf := []byte(`{"password":"qazwsx123"}`)
+	payLoad := new(PayLoad)
+	err := json.Unmarshal(buf, payLoad)
+	assert.NoError(t, err)
+
 	hash := HashedPassword{
 		bytes: []byte("$2a$10$8wfdlrkWi2QnZtfIs6jIWOZjGW3r6SVzTMv0O83JrGG42xYwddLym"),
 	}
-
-	plainPW := "qazwsx123"
-	plain := NewPlainPassword(plainPW)
-	assert.True(t, hash.VerifyPassword(plain))
+	assert.True(t, hash.VerifyPassword(payLoad.Password))
 }
