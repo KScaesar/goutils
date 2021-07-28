@@ -9,9 +9,21 @@ import (
 	"github.com/Min-Feng/goutils/database"
 )
 
-// 必須設為 public
-// 才能夠被 gorm.Migrator().CreateTable 感知
-// 因為 reflect 無法對 unexported field 進行處理
+type infraBook struct {
+	// DomainBook 必須設為 public
+	// 才能夠被 gorm.Migrator().CreateTable 感知
+	// 因為 reflect 無法對 unexported field 進行處理
+	DomainBook
+}
+
+func (s *infraBook) TableName() string {
+	return "testing_books"
+}
+
+func (s *infraBook) collectionName() string {
+	return "testing_books"
+}
+
 type DomainBook struct {
 	SqlID   int                `gorm:"column:id"                    bson:"-"`
 	MongoID primitive.ObjectID `gorm:"-"                            bson:"_id"`
@@ -19,6 +31,10 @@ type DomainBook struct {
 }
 
 type testFixture struct{}
+
+func (f testFixture) databaseName() string {
+	return "golang_integration_test"
+}
 
 func (f testFixture) mongoConnectConfig() database.MongoConfig {
 	return database.MongoConfig{
@@ -42,7 +58,7 @@ func (f testFixture) mysqlConnectConfig() database.RMDBConfig {
 		User:        "root",
 		Password:    "1234",
 		HostAndPort: "localhost:3306",
-		Database:    "golang_integration_test",
+		Database:    f.databaseName(),
 	}
 }
 

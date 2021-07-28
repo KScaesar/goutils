@@ -19,7 +19,12 @@ func Test_uowMongo_AutoStart(t *testing.T) {
 	config := fixture.mongoConnectConfig()
 	client := fixture.mongoClient(config)
 
-	repo := bookMongoRepo{col: client.Database("golang_integration_test").Collection("testing_book")}
+	mongoBook := infraBook{}
+	repo := bookMongoRepo{
+		col: client.
+			Database(fixture.databaseName()).
+			Collection(mongoBook.collectionName()),
+	}
 	uowFactory := database.NewUowMongoFactory(client)
 
 	uow, err := uowFactory.CreateUow()
@@ -39,14 +44,11 @@ func Test_uowMongo_AutoStart(t *testing.T) {
 		return nil
 	}
 
-	// enable tx
 	uowErr := uow.AutoStart(nil, fn)
-	assert.NoError(t, uowErr)
+	assert.NoError(t, uowErr, "enable tx")
 
-	// not enable transaction
-	// _ = uow
-	// repoErr := fn(nil)
-	// assert.NoError(t, repoErr)
+	fnErr := fn(nil)
+	assert.NoError(t, fnErr, "not enable transaction")
 }
 
 type bookMongoRepo struct {
@@ -60,13 +62,13 @@ func (repo *bookMongoRepo) createBook(ctx context.Context, book *DomainBook) err
 }
 
 func (repo *bookMongoRepo) updateBook(ctx context.Context, book *DomainBook) error {
-	filter := mongoFilter{}
-	_, err := repo.col.UpdateOne(ctx, filter.ID(book.MongoID), bson.M{"$set": book})
+	query := mongoQuery{}
+	_, err := repo.col.UpdateOne(ctx, query.ID(book.MongoID), bson.M{"$set": book})
 	return err
 }
 
-type mongoFilter struct{}
+type mongoQuery struct{}
 
-func (f mongoFilter) ID(id interface{}) bson.D {
+func (f mongoQuery) ID(id interface{}) bson.D {
 	return bson.D{{"_id", id}}
 }

@@ -16,60 +16,49 @@ func Test_uowGorm_AutoStart(t *testing.T) {
 	db := fixture.mysqlGorm(fixture.mysqlConnectConfig())
 
 	// https://gorm.io/docs/migration.html#Tables
-	sqlBookConfig := &sqlBook{}
-	if !db.Unwrap().Migrator().HasTable(sqlBookConfig.TableName()) {
-		db.Unwrap().Migrator().CreateTable(sqlBookConfig)
+	sqlBook := &infraBook{}
+	if !db.Unwrap().Migrator().HasTable(sqlBook.TableName()) {
+		db.Unwrap().Migrator().CreateTable(sqlBook)
 	}
 
 	uowFactory := database.NewUowGormFactory(db)
-	repo := bookRepo{db: db, tableName: sqlBookConfig.TableName()}
+	repo := bookGormRepo{db: db, tableName: sqlBook.TableName()}
 
 	uow, err := uowFactory.CreateUow()
 	assert.NoError(t, err)
 
 	fn := func(txCtx context.Context) error {
-		book1 := &DomainBook{Name: "ddd_is_good"}
-		if err := repo.createBook(txCtx, book1); err != nil {
+		book := &DomainBook{Name: "ddd_is_good"}
+		if err := repo.createBook(txCtx, book); err != nil {
 			return err
 		}
 
-		book1.Name = "tdd_is_good"
-		if err := repo.updateBook(txCtx, book1); err != nil {
+		book.Name = "tdd_is_good"
+		if err := repo.updateBook(txCtx, book); err != nil {
 			return err
 		}
 
 		return nil
 	}
 
-	// enable tx
 	uowErr := uow.AutoStart(nil, fn)
-	assert.NoError(t, uowErr)
+	assert.NoError(t, uowErr, "enable tx")
 
-	// normal sql, not enable transaction
-	// _ = uow
-	// repoErr := fn(nil)
-	// assert.NoError(t, repoErr)
+	fnErr := fn(nil)
+	assert.NoError(t, fnErr, "not enable transaction")
 }
 
-type sqlBook struct {
-	DomainBook
-}
-
-func (s *sqlBook) TableName() string {
-	return "testing_books"
-}
-
-type bookRepo struct {
+type bookGormRepo struct {
 	db        *database.WrapperGorm
 	tableName string
 }
 
-func (repo *bookRepo) createBook(ctx context.Context, book *DomainBook) error {
+func (repo *bookGormRepo) createBook(ctx context.Context, book *DomainBook) error {
 	p := repo.db.GetTxFromCtxAndSelectProcessor(ctx)
 	return p.Table(repo.tableName).Create(book).Error
 }
 
-func (repo *bookRepo) updateBook(ctx context.Context, book *DomainBook) error {
+func (repo *bookGormRepo) updateBook(ctx context.Context, book *DomainBook) error {
 	p := repo.db.GetTxFromCtxAndSelectProcessor(ctx)
 	return p.Table(repo.tableName).Model(book).Updates(book).Error
 }
