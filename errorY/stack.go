@@ -3,11 +3,11 @@ package errorY
 import "bytes"
 
 // Stacks 取出所有 Wrap 時, 記錄的 stack
-func Stacks(err error) []StackTrace {
+func Stacks(err error) []Stack {
 	pgkStacks := getPkgStacks(err)
 	length := len(pgkStacks)
 	last := length - 1
-	stacks := make([]StackTrace, length)
+	stacks := make([]Stack, length)
 
 	for i, pgkStack := range pgkStacks {
 		stack := transformPgkStack(pgkStack)
@@ -36,13 +36,13 @@ func getPkgStacks(err error) []pkgErrStack {
 	return nil
 }
 
-func transformPgkStack(iStack pkgErrStack) StackTrace {
+func transformPgkStack(iStack pkgErrStack) Stack {
 	if iStack == nil {
 		return make([]Frame, 0)
 	}
 
 	defaultBuff := 20
-	stack := make([]Frame, 0, defaultBuff)
+	stack := make(Stack, 0, defaultBuff)
 
 	pgkStack := iStack.StackTrace()
 	last := len(pgkStack) - 1
@@ -52,7 +52,7 @@ func transformPgkStack(iStack pkgErrStack) StackTrace {
 	// 所以 i 從 1 開始
 	for i := 1; i <= last; i++ {
 		frame, _ := pgkStack[i].MarshalText()
-		if isExistGinNext(frame) {
+		if whetherPerformFrameFilter(frame) {
 			continue
 		}
 		frame = append(frame, ' ')
@@ -61,8 +61,28 @@ func transformPgkStack(iStack pkgErrStack) StackTrace {
 	return stack
 }
 
-var filterGinNext = []byte("gin.(*Context).Next")
+func whetherPerformFrameFilter(frame []byte) bool {
+	for _, filter := range filters {
+		if filter(frame) {
+			return true
+		}
+	}
+	return false
+}
 
-func isExistGinNext(frame []byte) bool {
-	return bytes.Contains(frame, filterGinNext)
+var filters []FrameFilter
+
+// RegisterFrameFilter is not goroutine safe and should call this function on start of program
+func RegisterFrameFilter(filter ...FrameFilter) {
+	filters = append(filters, filter...)
+}
+
+// FrameFilter return true 表示要進行過濾, error stack 不會出現相關 frame 訊息
+type FrameFilter func(frame []byte) bool
+
+func ginNextFilter() FrameFilter {
+	target := []byte("gin.(*Context).Next")
+	return func(frame []byte) bool {
+		return bytes.Contains(frame, target)
+	}
 }

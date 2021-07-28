@@ -39,7 +39,7 @@ func TestStacks(t *testing.T) {
 	finalErr := useCase()
 	stacks := errorY.Stacks(finalErr)
 
-	expectedStacks := []errorY.StackTrace{
+	expectedStacks := []errorY.Stack{
 		{
 			"github.com/Min-Feng/goutils/errorY_test.TestStacks.func1 github.com/Min-Feng/goutils/errorY_test/stack_test.go:18 ",
 			"github.com/Min-Feng/goutils/errorY_test.TestStacks.func3 github.com/Min-Feng/goutils/errorY_test/stack_test.go:24 ",
