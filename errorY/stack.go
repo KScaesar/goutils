@@ -1,7 +1,5 @@
 package errorY
 
-import "bytes"
-
 // Stacks 取出所有 Wrap 時, 記錄的 stack
 func Stacks(err error) []Stack {
 	pgkStacks := getPkgStacks(err)
@@ -52,7 +50,7 @@ func transformPgkStack(iStack pkgErrStack) Stack {
 	// 所以 i 從 1 開始
 	for i := 1; i <= last; i++ {
 		frame, _ := pgkStack[i].MarshalText()
-		if whetherPerformFrameFilter(frame) {
+		if canRemoveFrame(frame) {
 			continue
 		}
 		frame = append(frame, ' ')
@@ -61,7 +59,9 @@ func transformPgkStack(iStack pkgErrStack) Stack {
 	return stack
 }
 
-func whetherPerformFrameFilter(frame []byte) bool {
+// canRemoveFrame return true means that the frame can be removed,
+// the function does not perform deletion, it is query semantics
+func canRemoveFrame(frame []byte) bool {
 	for _, filter := range filters {
 		if filter(frame) {
 			return true
@@ -77,12 +77,5 @@ func RegisterFrameFilter(filter ...FrameFilter) {
 	filters = append(filters, filter...)
 }
 
-// FrameFilter return true 表示要進行過濾, error stack 不會出現相關 frame 訊息
+// FrameFilter return true 表示 error stack 要過濾 這個 frame, 不希望它出現
 type FrameFilter func(frame []byte) bool
-
-func ginNextFilter() FrameFilter {
-	target := []byte("gin.(*Context).Next")
-	return func(frame []byte) bool {
-		return bytes.Contains(frame, target)
-	}
-}
