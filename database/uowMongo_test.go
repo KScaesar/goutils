@@ -5,6 +5,7 @@ package database_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson"
@@ -22,7 +23,7 @@ func Test_uowMongo_AutoStart(t *testing.T) {
 	mongoBook := infraBook{}
 	repo := bookMongoRepo{
 		col: client.
-			Database(fixture.databaseName()).
+			Database(fixture.dbName()).
 			Collection(mongoBook.collectionName()),
 	}
 	uowFactory := database.NewUowMongoFactory(client)
@@ -30,24 +31,32 @@ func Test_uowMongo_AutoStart(t *testing.T) {
 	uow, err := uowFactory.CreateUow()
 	assert.NoError(t, err)
 
-	fn := func(txCtx context.Context) error {
-		book1 := &DomainBook{Name: "ddd_is_good"}
-		if err := repo.createBook(txCtx, book1); err != nil {
-			return err
-		}
+	createFn := func(name string) func(txCtx context.Context) error {
+		return func(txCtx context.Context) error {
+			book := &DomainBook{
+				Name:     "ddd_is_good" + "#" + name,
+				NoTzTime: time.Now(),
+				TzTime:   time.Now(),
+			}
+			if err := repo.createBook(txCtx, book); err != nil {
+				return err
+			}
 
-		book1.Name = "tdd_is_good"
-		if err := repo.updateBook(txCtx, book1); err != nil {
-			return err
-		}
+			book.Name = "tdd_is_good" + "#" + name
+			if err := repo.updateBook(txCtx, book); err != nil {
+				return err
+			}
 
-		return nil
+			return nil
+		}
 	}
 
-	uowErr := uow.AutoStart(nil, fn)
+	txFn := createFn("tx")
+	uowErr := uow.AutoStart(nil, txFn)
 	assert.NoError(t, uowErr, "enable tx")
 
-	fnErr := fn(nil)
+	noTxFn := createFn("noTx")
+	fnErr := noTxFn(nil)
 	assert.NoError(t, fnErr, "not enable transaction")
 }
 

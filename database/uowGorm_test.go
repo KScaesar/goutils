@@ -5,7 +5,9 @@ package database_test
 import (
 	"context"
 	"testing"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Min-Feng/goutils/database"
@@ -13,12 +15,12 @@ import (
 
 func Test_uowGorm_AutoStart(t *testing.T) {
 	fixture := testFixture{}
-	db := fixture.mysqlGorm(fixture.mysqlConnectConfig())
+	db := fixture.pgGorm()
 
 	// https://gorm.io/docs/migration.html#Tables
 	sqlBook := &infraBook{}
 	if !db.Unwrap().Migrator().HasTable(sqlBook.TableName()) {
-		db.Unwrap().Migrator().CreateTable(sqlBook)
+		assert.NoError(t, db.Unwrap().Migrator().CreateTable(sqlBook))
 	}
 
 	uowFactory := database.NewUowGormFactory(db)
@@ -27,24 +29,33 @@ func Test_uowGorm_AutoStart(t *testing.T) {
 	uow, err := uowFactory.CreateUow()
 	assert.NoError(t, err)
 
-	fn := func(txCtx context.Context) error {
-		book := &DomainBook{Name: "ddd_is_good"}
-		if err := repo.createBook(txCtx, book); err != nil {
-			return err
-		}
+	createFn := func(name string) func(txCtx context.Context) error {
+		return func(txCtx context.Context) error {
+			book := &DomainBook{
+				SqlID:    uuid.New().String(),
+				Name:     "ddd_is_good" + "#" + name,
+				NoTzTime: time.Now(),
+				TzTime:   time.Now(),
+			}
+			if err := repo.createBook(txCtx, book); err != nil {
+				return err
+			}
 
-		book.Name = "tdd_is_good"
-		if err := repo.updateBook(txCtx, book); err != nil {
-			return err
-		}
+			book.Name = "tdd_is_good" + "#" + name
+			if err := repo.updateBook(txCtx, book); err != nil {
+				return err
+			}
 
-		return nil
+			return nil
+		}
 	}
 
-	uowErr := uow.AutoStart(nil, fn)
+	txFn := createFn("tx")
+	uowErr := uow.AutoStart(nil, txFn)
 	assert.NoError(t, uowErr, "enable tx")
 
-	fnErr := fn(nil)
+	noTxFn := createFn("noTx")
+	fnErr := noTxFn(nil)
 	assert.NoError(t, fnErr, "not enable transaction")
 }
 
