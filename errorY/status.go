@@ -36,7 +36,7 @@ func HTTPStatus(err error) int {
 
 // SimpleInfo 只取第一次 Wrap 的資訊, 後續 WrapMessage 函數的訊息不會保留,
 // 如果 input 傳入的 err 就是 root error, 沒有經過 Wrap,
-// 則只顯示 root error descrption
+// 則只顯示 root error description
 func SimpleInfo(err error) string {
 	var before, current, msgErr error
 

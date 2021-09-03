@@ -20,8 +20,5 @@ func (b *baseError) Error() string {
 
 func IsUndefinedError(err error) bool {
 	_, ok := errors.Cause(err).(*baseError)
-	if ok {
-		return false
-	}
-	return true
+	return !ok
 }
