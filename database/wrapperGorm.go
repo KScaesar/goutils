@@ -37,13 +37,18 @@ func (wrapper *WrapperGorm) GetTxFromCtxAndSelectProcessor(txCtx context.Context
 		return wrapper.Unwrap()
 	}
 
-	// key 用來確認是否來自同一個 *gorm.DB
-	key := wrapper
-	tx, ok := txCtx.Value(key).(*gorm.DB)
-	if ok {
+	if wrapper.ExistTxInsideContext(txCtx) {
+		key := wrapper
+		tx := txCtx.Value(key).(*gorm.DB)
 		return tx
 	}
 	return wrapper.Unwrap()
+}
+
+func (wrapper *WrapperGorm) ExistTxInsideContext(ctx context.Context) bool {
+	key := wrapper
+	_, ok := ctx.Value(key).(*gorm.DB)
+	return ok
 }
 
 func (wrapper *WrapperGorm) Unwrap() *gorm.DB {

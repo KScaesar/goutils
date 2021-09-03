@@ -11,20 +11,20 @@ import (
 	"github.com/Min-Feng/goutils/database"
 )
 
-func Test_uowGorm_AutoStart(t *testing.T) {
+func Test_txGorm_AutoStart(t *testing.T) {
 	fixture := testFixture{}
 	db := fixture.mysqlGorm(fixture.mysqlConnectConfig())
 
 	// https://gorm.io/docs/migration.html#Tables
 	sqlBook := &infraBook{}
 	if !db.Unwrap().Migrator().HasTable(sqlBook.TableName()) {
-		db.Unwrap().Migrator().CreateTable(sqlBook)
+		assert.NoError(t, db.Unwrap().Migrator().CreateTable(sqlBook))
 	}
 
-	uowFactory := database.NewUowGormFactory(db)
+	txFactory := database.NewGormTxFactory(db)
 	repo := bookGormRepo{db: db, tableName: sqlBook.TableName()}
 
-	uow, err := uowFactory.CreateUow()
+	tx, err := txFactory.CreateTx()
 	assert.NoError(t, err)
 
 	fn := func(txCtx context.Context) error {
@@ -41,8 +41,8 @@ func Test_uowGorm_AutoStart(t *testing.T) {
 		return nil
 	}
 
-	uowErr := uow.AutoStart(nil, fn)
-	assert.NoError(t, uowErr, "enable tx")
+	txErr := tx.AutoStart(nil, fn)
+	assert.NoError(t, txErr, "enable tx")
 
 	fnErr := fn(nil)
 	assert.NoError(t, fnErr, "not enable transaction")

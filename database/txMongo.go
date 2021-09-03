@@ -13,7 +13,7 @@ import (
 	"github.com/Min-Feng/goutils/errorY"
 )
 
-func NewUowMongoFactory(client *mongo.Client) UowFactory {
+func NewMongoTxFactory(client *mongo.Client) TxFactory {
 	wConcern := writeconcern.New(writeconcern.WMajority(), writeconcern.J(true), writeconcern.WTimeout(10*time.Second))
 	rConcern := readconcern.Snapshot()
 	rPref := readpref.Primary()
@@ -24,41 +24,45 @@ func NewUowMongoFactory(client *mongo.Client) UowFactory {
 		SetDefaultReadConcern(rConcern).
 		SetDefaultReadPreference(rPref)
 
-	return &uowMongoFactory{
+	return &mongoTxFactory{
 		client:            client,
 		createdSessionOpt: opt,
 	}
 }
 
-type uowMongoFactory struct {
+type mongoTxFactory struct {
 	client            *mongo.Client
 	createdSessionOpt *options.SessionOptions
 }
 
-func (f *uowMongoFactory) CreateUow() (Uow, error) {
+func (f *mongoTxFactory) CreateTx() (Transaction, error) {
 	session, err := f.client.StartSession(f.createdSessionOpt)
 	if err != nil {
 		return nil, errorY.Wrap(errorY.ErrSystem, err.Error())
 	}
-	return &uowMongo{sess: session}, nil
+	return &mongoTxAdapter{sess: session}, nil
 }
 
-type uowMongo struct {
+type mongoTxAdapter struct {
 	sess mongo.Session
 }
 
-func (uow *uowMongo) AutoStart(ctx context.Context, txFn func(txCtx context.Context) error) error {
+func (adapter *mongoTxAdapter) AutoStart(ctx context.Context, fn func(txCtx context.Context) error) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	defer uow.sess.EndSession(ctx)
+	defer adapter.sess.EndSession(ctx)
+
+	if adapter.isMongoSession(ctx) {
+		return fn(ctx)
+	}
 
 	mongoTxFn := func(sessCtx mongo.SessionContext) (interface{}, error) {
-		return nil, txFn(sessCtx)
+		return nil, fn(sessCtx)
 	}
 
 	// https://docs.mongodb.com/v4.4/core/transactions-in-applications/#std-label-txn-callback-api
-	_, err := uow.sess.WithTransaction(ctx, mongoTxFn)
+	_, err := adapter.sess.WithTransaction(ctx, mongoTxFn)
 	if err != nil {
 		if errorY.IsUndefinedError(err) {
 			return errorY.Wrap(errorY.ErrSystem, err.Error())
@@ -69,36 +73,54 @@ func (uow *uowMongo) AutoStart(ctx context.Context, txFn func(txCtx context.Cont
 	return nil
 }
 
-func (uow *uowMongo) ManualStart(ctx context.Context, txFn func(txCtx context.Context) error) error {
+func (adapter *mongoTxAdapter) ManualStart(
+	ctx context.Context,
+	fn func(txCtx context.Context) error,
+) (
+	commit func() error,
+	rollback func() error,
+	fnErr error,
+) {
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	err := uow.sess.StartTransaction()
-	if err != nil {
-		return errorY.Wrap(errorY.ErrSystem, err.Error())
+	if adapter.isMongoSession(ctx) {
+		return adapter.doNothing, adapter.doNothing, fn(ctx)
 	}
 
-	sessCtx := mongo.NewSessionContext(ctx, uow.sess)
-	return txFn(sessCtx)
+	err := adapter.sess.StartTransaction()
+	if err != nil {
+		return adapter.doNothing, adapter.doNothing, errorY.Wrap(errorY.ErrSystem, err.Error())
+	}
+
+	sessCtx := mongo.NewSessionContext(ctx, adapter.sess)
+	return adapter.commit, adapter.rollback, fn(sessCtx)
 }
 
-func (uow *uowMongo) Commit() error {
-	err := uow.sess.CommitTransaction(nil)
+func (adapter *mongoTxAdapter) doNothing() error { return nil }
+
+func (adapter *mongoTxAdapter) commit() error {
+	err := adapter.sess.CommitTransaction(nil)
 	if err != nil {
 		return errorY.Wrap(errorY.ErrSystem, err.Error())
 	}
 
-	uow.sess.EndSession(nil)
+	adapter.sess.EndSession(nil)
 	return nil
 }
 
-func (uow *uowMongo) Rollback() error {
-	defer uow.sess.EndSession(nil)
+func (adapter *mongoTxAdapter) rollback() error {
+	defer adapter.sess.EndSession(nil)
 
-	err := uow.sess.AbortTransaction(nil)
+	err := adapter.sess.AbortTransaction(nil)
 	if err != nil {
 		return errorY.Wrap(errorY.ErrSystem, err.Error())
 	}
 	return nil
+}
+
+func (adapter *mongoTxAdapter) isMongoSession(ctx context.Context) bool {
+	_, ok := ctx.(mongo.SessionContext)
+	return ok
 }

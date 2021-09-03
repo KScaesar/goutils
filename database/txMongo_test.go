@@ -14,7 +14,7 @@ import (
 	"github.com/Min-Feng/goutils/database"
 )
 
-func Test_uowMongo_AutoStart(t *testing.T) {
+func Test_txMongo_AutoStart(t *testing.T) {
 	fixture := testFixture{}
 	config := fixture.mongoConnectConfig()
 	client := fixture.mongoClient(config)
@@ -25,9 +25,9 @@ func Test_uowMongo_AutoStart(t *testing.T) {
 			Database(fixture.databaseName()).
 			Collection(mongoBook.collectionName()),
 	}
-	uowFactory := database.NewUowMongoFactory(client)
+	txFactory := database.NewMongoTxFactory(client)
 
-	uow, err := uowFactory.CreateUow()
+	tx, err := txFactory.CreateTx()
 	assert.NoError(t, err)
 
 	fn := func(txCtx context.Context) error {
@@ -44,8 +44,8 @@ func Test_uowMongo_AutoStart(t *testing.T) {
 		return nil
 	}
 
-	uowErr := uow.AutoStart(nil, fn)
-	assert.NoError(t, uowErr, "enable tx")
+	txErr := tx.AutoStart(nil, fn)
+	assert.NoError(t, txErr, "enable tx")
 
 	fnErr := fn(nil)
 	assert.NoError(t, fnErr, "not enable transaction")
