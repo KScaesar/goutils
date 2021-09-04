@@ -13,7 +13,7 @@ import (
 
 func Test_txGorm_AutoStart(t *testing.T) {
 	fixture := testFixture{}
-	db := fixture.mysqlGorm(fixture.mysqlConnectConfig())
+	db := fixture.pgGorm()
 
 	// https://gorm.io/docs/migration.html#Tables
 	sqlBook := &infraBook{}
@@ -27,24 +27,33 @@ func Test_txGorm_AutoStart(t *testing.T) {
 	tx, err := txFactory.CreateTx()
 	assert.NoError(t, err)
 
-	fn := func(txCtx context.Context) error {
-		book := &DomainBook{Name: "ddd_is_good"}
-		if err := repo.createBook(txCtx, book); err != nil {
-			return err
-		}
+	createFn := func(name string) func(txCtx context.Context) error {
+		return func(txCtx context.Context) error {
+			book := &DomainBook{
+				SqlID:    uuid.New().String(),
+				Name:     "ddd_is_good" + "#" + name,
+				NoTzTime: time.Now(),
+				TzTime:   time.Now(),
+			}
+			if err := repo.createBook(txCtx, book); err != nil {
+				return err
+			}
 
-		book.Name = "tdd_is_good"
-		if err := repo.updateBook(txCtx, book); err != nil {
-			return err
-		}
+			book.Name = "tdd_is_good" + "#" + name
+			if err := repo.updateBook(txCtx, book); err != nil {
+				return err
+			}
 
-		return nil
+			return nil
+		}
 	}
 
-	txErr := tx.AutoStart(nil, fn)
-	assert.NoError(t, txErr, "enable tx")
+	txFn := createFn("tx")
+	uowErr := tx.AutoStart(nil, txFn)
+	assert.NoError(t, uowErr, "enable tx")
 
-	fnErr := fn(nil)
+	noTxFn := createFn("noTx")
+	fnErr := noTxFn(nil)
 	assert.NoError(t, fnErr, "not enable transaction")
 }
 

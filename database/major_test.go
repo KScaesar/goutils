@@ -3,11 +3,18 @@
 package database_test
 
 import (
+	"time"
+
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/Min-Feng/goutils/database"
 )
+
+func init() {
+	location, _ := time.LoadLocation("UTC")
+	time.Local = location
+}
 
 type infraBook struct {
 	// DomainBook 必須設為 public
@@ -25,14 +32,16 @@ func (s *infraBook) collectionName() string {
 }
 
 type DomainBook struct {
-	SqlID   int                `gorm:"column:id"                    bson:"-"`
-	MongoID primitive.ObjectID `gorm:"-"                            bson:"_id"`
-	Name    string             `gorm:"column:name;type:varchar(50)" bson:"name"`
+	SqlID    string             `gorm:"column:id;type:uuid;primaryKey" bson:"-"`
+	MongoID  primitive.ObjectID `gorm:"-"                              bson:"_id"`
+	Name     string             `gorm:"column:name;type:varchar(50)"   bson:"name"`
+	NoTzTime time.Time          `gorm:"column:no_tz_time;type:timestamp" bson:"no_tz_time"`
+	TzTime   time.Time          `gorm:"column:tz_time;type:timestamptz"  bson:"tz_time"`
 }
 
 type testFixture struct{}
 
-func (f testFixture) databaseName() string {
+func (f testFixture) dbName() string {
 	return "golang_integration_test"
 }
 
@@ -55,15 +64,36 @@ func (f testFixture) mongoClient(cfg database.MongoConfig) *mongo.Client {
 
 func (f testFixture) mysqlConnectConfig() database.RMDBConfig {
 	return database.RMDBConfig{
-		User:        "root",
-		Password:    "1234",
-		HostAndPort: "localhost:3306",
-		Database:    f.databaseName(),
+		User:     "root",
+		Password: "1234",
+		Host:     "localhost",
+		Port:     "3306",
+		Database: f.dbName(),
 	}
 }
 
-func (f testFixture) mysqlGorm(cfg database.RMDBConfig) *database.WrapperGorm {
+func (f testFixture) mysqlGorm() *database.WrapperGorm {
+	cfg := f.mysqlConnectConfig()
 	db, err := database.NewGormMysql(&cfg)
+	if err != nil {
+		panic(err)
+	}
+	return db
+}
+
+func (f testFixture) pgConnectConfig() database.RMDBConfig {
+	return database.RMDBConfig{
+		User:     "root",
+		Password: "1234",
+		Host:     "localhost",
+		Port:     "5432",
+		Database: f.dbName(),
+	}
+}
+
+func (f testFixture) pgGorm() *database.WrapperGorm {
+	cfg := f.pgConnectConfig()
+	db, err := database.NewGormPostgres(&cfg)
 	if err != nil {
 		panic(err)
 	}
