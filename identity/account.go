@@ -1,7 +1,7 @@
 package identity
 
 import (
-	"github.com/Min-Feng/goutils/base"
+	"github.com/Min-Feng/goutils"
 )
 
 type AccountParam struct {
@@ -12,7 +12,7 @@ type AccountParam struct {
 
 func NewAccount(param *AccountParam) Account {
 	return Account{
-		UserID:   base.NewID(),
+		UserID:   goutils.NewID(),
 		UserName: param.UserName,
 		Password: param.Password,
 		Email:    param.Email,
@@ -20,7 +20,7 @@ func NewAccount(param *AccountParam) Account {
 }
 
 type Account struct {
-	UserID   base.ID
+	UserID   goutils.ID
 	UserName string
 	Password HashedPassword
 	Email    string

@@ -1,4 +1,4 @@
-package base
+package goutils
 
 import (
 	"database/sql/driver"

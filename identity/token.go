@@ -3,7 +3,7 @@ package identity
 import (
 	"time"
 
-	"github.com/Min-Feng/goutils/base"
+	"github.com/Min-Feng/goutils"
 )
 
 var (
@@ -16,7 +16,7 @@ type TokenConfig struct {
 	RefreshInterval time.Duration
 }
 
-func NewAccessToken(id base.ID) Token {
+func NewAccessToken(id goutils.ID) Token {
 	return Token{
 		Kind:     TokenKindAccess,
 		UserID:   id,
@@ -24,7 +24,7 @@ func NewAccessToken(id base.ID) Token {
 	}
 }
 
-func NewRefreshToken(id base.ID) Token {
+func NewRefreshToken(id goutils.ID) Token {
 	return Token{
 		Kind:     TokenKindRefresh,
 		UserID:   id,
@@ -34,7 +34,7 @@ func NewRefreshToken(id base.ID) Token {
 
 type Token struct {
 	Kind     string
-	UserID   base.ID
+	UserID   goutils.ID
 	DeadLine time.Time
 }
 
