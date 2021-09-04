@@ -10,7 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 
-	"github.com/Min-Feng/goutils/errorY"
+	"github.com/Min-Feng/goutils/errors"
 )
 
 func NewMongoTxFactory(client *mongo.Client) TxFactory {
@@ -38,7 +38,7 @@ type mongoTxFactory struct {
 func (f *mongoTxFactory) CreateTx() (Transaction, error) {
 	session, err := f.client.StartSession(f.createdSessionOpt)
 	if err != nil {
-		return nil, errorY.Wrap(errorY.ErrSystem, err.Error())
+		return nil, errors.Wrap(errors.ErrSystem, err.Error())
 	}
 	return &mongoTxAdapter{sess: session}, nil
 }
@@ -64,8 +64,8 @@ func (adapter *mongoTxAdapter) AutoComplete(ctx context.Context, fn func(txCtx c
 	// https://docs.mongodb.com/v4.4/core/transactions-in-applications/#std-label-txn-callback-api
 	_, err := adapter.sess.WithTransaction(ctx, mongoTxFn)
 	if err != nil {
-		if errorY.IsUndefinedError(err) {
-			return errorY.Wrap(errorY.ErrSystem, err.Error())
+		if errors.IsUndefinedError(err) {
+			return errors.Wrap(errors.ErrSystem, err.Error())
 		}
 		return err
 	}
@@ -93,7 +93,7 @@ func (adapter *mongoTxAdapter) ManualComplete(
 	err := adapter.sess.StartTransaction()
 	if err != nil {
 		adapter.sess.EndSession(ctx)
-		return adapter.doNothing, adapter.doNothing, errorY.Wrap(errorY.ErrSystem, err.Error())
+		return adapter.doNothing, adapter.doNothing, errors.Wrap(errors.ErrSystem, err.Error())
 	}
 
 	sessCtx := mongo.NewSessionContext(ctx, adapter.sess)
@@ -107,7 +107,7 @@ func (adapter *mongoTxAdapter) commit() error {
 
 	err := adapter.sess.CommitTransaction(nil)
 	if err != nil {
-		return errorY.Wrap(errorY.ErrSystem, err.Error())
+		return errors.Wrap(errors.ErrSystem, err.Error())
 	}
 
 	return nil
@@ -118,7 +118,7 @@ func (adapter *mongoTxAdapter) rollback() error {
 
 	err := adapter.sess.AbortTransaction(nil)
 	if err != nil {
-		return errorY.Wrap(errorY.ErrSystem, err.Error())
+		return errors.Wrap(errors.ErrSystem, err.Error())
 	}
 
 	return nil

@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/tidwall/gjson"
 
-	"github.com/Min-Feng/goutils/errorY"
+	"github.com/Min-Feng/goutils/errors"
 	"github.com/Min-Feng/goutils/testingY"
 )
 
@@ -40,8 +40,8 @@ func TestError(t *testing.T) {
   ]
 }`
 
-	err := errorY.New(8787, http.StatusInternalServerError, "json failed")
-	Err(errorY.Wrap(err, "unit test")).Send()
+	err := errors.New(8787, http.StatusInternalServerError, "json failed")
+	Err(errors.Wrap(err, "unit test")).Send()
 	actual := writer.String()
 
 	errPath := "error"

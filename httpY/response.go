@@ -1,7 +1,7 @@
 package httpY
 
 import (
-	"github.com/Min-Feng/goutils/errorY"
+	"github.com/Min-Feng/goutils/errors"
 )
 
 func NewNormalResponse(data interface{}) *Response {
@@ -17,8 +17,8 @@ func NewNormalResponse(data interface{}) *Response {
 
 func NewErrorResponse(err error) *Response {
 	return &Response{
-		Code:    errorY.Code(err),
-		Message: errorY.SimpleInfo(err),
+		Code:    errors.Code(err),
+		Message: errors.SimpleInfo(err),
 		Data:    struct{}{},
 	}
 }

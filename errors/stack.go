@@ -1,4 +1,4 @@
-package errorY
+package errors
 
 // Stacks 取出所有 Wrap 時, 記錄的 stack
 func Stacks(err error) []Stack {

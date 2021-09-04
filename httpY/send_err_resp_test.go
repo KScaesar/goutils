@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Min-Feng/goutils/errorY"
+	"github.com/Min-Feng/goutils/errors"
 	"github.com/Min-Feng/goutils/testingY"
 )
 
@@ -30,12 +30,12 @@ func TestSendErrorResponse(t *testing.T) {
 }
 
 func helloHandlerUseCaseFailed(c *gin.Context) {
-	repo := func() error { return errorY.Wrap(errorY.ErrSystem, "sql statement invalid") }
+	repo := func() error { return errors.Wrap(errors.ErrSystem, "sql statement invalid") }
 
 	uc := func() error {
 		err := repo()
 		if err != nil {
-			return errorY.WrapMessage(err, "repo")
+			return errors.WrapMessage(err, "repo")
 		}
 		return nil
 	}

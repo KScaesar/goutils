@@ -3,7 +3,7 @@ package httpY
 import (
 	"github.com/gin-gonic/gin"
 
-	"github.com/Min-Feng/goutils/errorY"
+	"github.com/Min-Feng/goutils/errors"
 	"github.com/Min-Feng/goutils/logY"
 )
 
@@ -20,6 +20,6 @@ func SendErrorResponseBase(c *gin.Context, err error, skip int, kind logY.Kind) 
 		Kind(kind).
 		Prototype().Err(err).Caller(skip + 1).Send()
 
-	c.JSON(errorY.HTTPStatus(err), NewErrorResponse(err))
+	c.JSON(errors.HTTPStatus(err), NewErrorResponse(err))
 	c.Abort()
 }

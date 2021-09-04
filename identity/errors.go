@@ -3,17 +3,17 @@ package identity
 import (
 	"net/http"
 
-	"github.com/Min-Feng/goutils/errorY"
+	"github.com/Min-Feng/goutils/errors"
 )
 
 var (
-	ErrAuthentication = errorY.New(
+	ErrAuthentication = errors.New(
 		2001,
 		http.StatusUnauthorized,
 		"invalid authentication",
 	)
 
-	ErrAuthorization = errorY.New(
+	ErrAuthorization = errors.New(
 		2002,
 		http.StatusForbidden,
 		"invalid authorization",

@@ -10,7 +10,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/Min-Feng/goutils/errorY"
+	"github.com/Min-Feng/goutils/errors"
 )
 
 var (
@@ -95,7 +95,7 @@ func (pw PlainPassword) Bcrypt() (HashedPassword, error) {
 	const cost = 10
 	hash, err := bcrypt.GenerateFromPassword(pw.bytes, cost)
 	if err != nil {
-		return HashedPassword{}, errorY.Wrap(errorY.ErrSystem, err.Error())
+		return HashedPassword{}, errors.Wrap(errors.ErrSystem, err.Error())
 	}
 
 	return HashedPassword{
@@ -106,7 +106,7 @@ func (pw PlainPassword) Bcrypt() (HashedPassword, error) {
 func (pw PlainPassword) CheckRule() (Err error) {
 	defer func() {
 		if Err != nil {
-			Err = errorY.Wrap(errorY.ErrInvalidParams, "violation of password rules: %v", Err)
+			Err = errors.Wrap(errors.ErrInvalidParams, "violation of password rules: %v", Err)
 		}
 	}()
 

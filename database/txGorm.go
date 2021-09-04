@@ -5,7 +5,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/Min-Feng/goutils/errorY"
+	"github.com/Min-Feng/goutils/errors"
 )
 
 func NewGormTxFactory(db *WrapperGorm) TxFactory {
@@ -41,8 +41,8 @@ func (adapter *gormTxAdapter) AutoComplete(ctx context.Context, fn func(txCtx co
 
 	err := adapter.wrapperDB.Unwrap().Transaction(gormTxFn)
 	if err != nil {
-		if errorY.IsUndefinedError(err) {
-			return errorY.Wrap(errorY.ErrSystem, err.Error())
+		if errors.IsUndefinedError(err) {
+			return errors.Wrap(errors.ErrSystem, err.Error())
 		}
 		return err
 	}
@@ -68,7 +68,7 @@ func (adapter *gormTxAdapter) ManualComplete(
 
 	adapter.tx = adapter.wrapperDB.Unwrap().Begin()
 	if err := adapter.tx.Error; err != nil {
-		return adapter.doNothing, adapter.doNothing, errorY.Wrap(errorY.ErrSystem, err.Error())
+		return adapter.doNothing, adapter.doNothing, errors.Wrap(errors.ErrSystem, err.Error())
 	}
 
 	txCtx := adapter.wrapperDB.NewTxContext(ctx, adapter.tx)
@@ -80,7 +80,7 @@ func (adapter *gormTxAdapter) doNothing() error { return nil }
 func (adapter *gormTxAdapter) commit() error {
 	err := adapter.tx.Commit().Error
 	if err != nil {
-		return errorY.Wrap(errorY.ErrSystem, err.Error())
+		return errors.Wrap(errors.ErrSystem, err.Error())
 	}
 	return nil
 }
@@ -88,7 +88,7 @@ func (adapter *gormTxAdapter) commit() error {
 func (adapter *gormTxAdapter) rollback() error {
 	err := adapter.tx.Rollback().Error
 	if err != nil {
-		return errorY.Wrap(errorY.ErrSystem, err.Error())
+		return errors.Wrap(errors.ErrSystem, err.Error())
 	}
 	return nil
 }

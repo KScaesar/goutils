@@ -3,14 +3,14 @@ package httpY
 import (
 	"bytes"
 
-	"github.com/Min-Feng/goutils/errorY"
+	"github.com/Min-Feng/goutils/errors"
 )
 
 func init() {
-	errorY.RegisterFrameFilter(ginNextFilter())
+	errors.RegisterFrameFilter(ginNextFilter())
 }
 
-func ginNextFilter() errorY.FrameFilter {
+func ginNextFilter() errors.FrameFilter {
 	target := []byte("gin.(*Context).Next")
 	return func(frame []byte) bool {
 		return bytes.Contains(frame, target)

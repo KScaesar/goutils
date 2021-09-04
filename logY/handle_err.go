@@ -3,17 +3,17 @@ package logY
 import (
 	"github.com/rs/zerolog"
 
-	"github.com/Min-Feng/goutils/errorY"
+	"github.com/Min-Feng/goutils/errors"
 )
 
 func errorStackMarshaler(err error) interface{} {
-	return errorY.Stacks(err)
+	return errors.Stacks(err)
 }
 
 func errorMarshalFunc(err error) interface{} {
 	return &errorLogObject{
 		msg:  err.Error(),
-		code: errorY.Code(err),
+		code: errors.Code(err),
 	}
 }
 

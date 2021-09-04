@@ -3,7 +3,7 @@ package goutils
 import (
 	"time"
 
-	"github.com/Min-Feng/goutils/errorY"
+	"github.com/Min-Feng/goutils/errors"
 )
 
 var timeSpec = []string{
@@ -24,5 +24,5 @@ func TimeParse(timeLayout string) (t time.Time, err error) {
 			return t, nil
 		}
 	}
-	return time.Time{}, errorY.Wrap(errorY.ErrSystem, err.Error())
+	return time.Time{}, errors.Wrap(errors.ErrSystem, err.Error())
 }
