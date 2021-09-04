@@ -5,13 +5,14 @@ package database_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Min-Feng/goutils/database"
 )
 
-func Test_txGorm_AutoStart(t *testing.T) {
+func Test_txGorm_AutoComplete(t *testing.T) {
 	fixture := testFixture{}
 	db := fixture.pgGorm()
 
@@ -27,11 +28,10 @@ func Test_txGorm_AutoStart(t *testing.T) {
 	tx, err := txFactory.CreateTx()
 	assert.NoError(t, err)
 
-	createFn := func(name string) func(txCtx context.Context) error {
+	fn := func(name string) func(txCtx context.Context) error {
 		return func(txCtx context.Context) error {
 			book := &DomainBook{
-				SqlID:    uuid.New().String(),
-				Name:     "ddd_is_good" + "#" + name,
+				Name:     "python" + "#" + name,
 				NoTzTime: time.Now(),
 				TzTime:   time.Now(),
 			}
@@ -39,7 +39,7 @@ func Test_txGorm_AutoStart(t *testing.T) {
 				return err
 			}
 
-			book.Name = "tdd_is_good" + "#" + name
+			book.Name = "golang" + "#" + name
 			if err := repo.updateBook(txCtx, book); err != nil {
 				return err
 			}
@@ -48,13 +48,11 @@ func Test_txGorm_AutoStart(t *testing.T) {
 		}
 	}
 
-	txFn := createFn("tx")
-	uowErr := tx.AutoStart(nil, txFn)
-	assert.NoError(t, uowErr, "enable tx")
+	err = tx.AutoComplete(nil, fn("tx"))
+	assert.NoError(t, err, "enable tx")
 
-	noTxFn := createFn("noTx")
-	fnErr := noTxFn(nil)
-	assert.NoError(t, fnErr, "not enable transaction")
+	err = fn("noTx")(nil)
+	assert.NoError(t, err, "not enable tx")
 }
 
 type bookGormRepo struct {

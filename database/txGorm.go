@@ -22,10 +22,10 @@ func (f *gormTxFactory) CreateTx() (Transaction, error) {
 
 type gormTxAdapter struct {
 	wrapperDB *WrapperGorm
-	tx        *gorm.DB // for manual start
+	tx        *gorm.DB // for ManualComplete
 }
 
-func (adapter *gormTxAdapter) AutoStart(ctx context.Context, fn func(txCtx context.Context) error) error {
+func (adapter *gormTxAdapter) AutoComplete(ctx context.Context, fn func(txCtx context.Context) error) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -50,7 +50,7 @@ func (adapter *gormTxAdapter) AutoStart(ctx context.Context, fn func(txCtx conte
 	return nil
 }
 
-func (adapter *gormTxAdapter) ManualStart(
+func (adapter *gormTxAdapter) ManualComplete(
 	ctx context.Context,
 	fn func(txCtx context.Context) error,
 ) (

@@ -11,11 +11,6 @@ import (
 	"github.com/Min-Feng/goutils/database"
 )
 
-func init() {
-	location, _ := time.LoadLocation("UTC")
-	time.Local = location
-}
-
 type infraBook struct {
 	// DomainBook 必須設為 public
 	// 才能夠被 gorm.Migrator().CreateTable 感知
@@ -32,21 +27,22 @@ func (s *infraBook) collectionName() string {
 }
 
 type DomainBook struct {
-	SqlID    string             `gorm:"column:id;type:uuid;primaryKey" bson:"-"`
-	MongoID  primitive.ObjectID `gorm:"-"                              bson:"_id"`
-	Name     string             `gorm:"column:name;type:varchar(50)"   bson:"name"`
+	SqlID    string             `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()" bson:"-"`
+	MongoID  primitive.ObjectID `gorm:"-"                                bson:"_id"`
+	Name     string             `gorm:"column:name;type:varchar(50)"     bson:"name"`
 	NoTzTime time.Time          `gorm:"column:no_tz_time;type:timestamp" bson:"no_tz_time"`
 	TzTime   time.Time          `gorm:"column:tz_time;type:timestamptz"  bson:"tz_time"`
+	UpdateAt time.Time          `gorm:"column:update_at;type:timestamptz;autoUpdateTime"  bson:"tz_time"`
 }
 
 type testFixture struct{}
 
 func (f testFixture) dbName() string {
-	return "golang_integration_test"
+	return "integration_test"
 }
 
-func (f testFixture) mongoConnectConfig() database.MongoConfig {
-	return database.MongoConfig{
+func (f testFixture) mongoConnectConfig() database.ReplicaSetMongoConfig {
+	return database.ReplicaSetMongoConfig{
 		User:       "root",
 		Password:   "1234",
 		Address:    "localhost:27017,localhost:27019,localhost:27018",
@@ -54,8 +50,8 @@ func (f testFixture) mongoConnectConfig() database.MongoConfig {
 	}
 }
 
-func (f testFixture) mongoClient(cfg database.MongoConfig) *mongo.Client {
-	client, err := database.NewMongo(&cfg)
+func (f testFixture) mongoClient(cfg database.ReplicaSetMongoConfig) *mongo.Client {
+	client, err := database.NewReplicaSetMongo(&cfg)
 	if err != nil {
 		panic(err)
 	}

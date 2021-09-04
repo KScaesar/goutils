@@ -47,7 +47,7 @@ type mongoTxAdapter struct {
 	sess mongo.Session
 }
 
-func (adapter *mongoTxAdapter) AutoStart(ctx context.Context, fn func(txCtx context.Context) error) error {
+func (adapter *mongoTxAdapter) AutoComplete(ctx context.Context, fn func(txCtx context.Context) error) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -73,7 +73,7 @@ func (adapter *mongoTxAdapter) AutoStart(ctx context.Context, fn func(txCtx cont
 	return nil
 }
 
-func (adapter *mongoTxAdapter) ManualStart(
+func (adapter *mongoTxAdapter) ManualComplete(
 	ctx context.Context,
 	fn func(txCtx context.Context) error,
 ) (
@@ -101,12 +101,13 @@ func (adapter *mongoTxAdapter) ManualStart(
 func (adapter *mongoTxAdapter) doNothing() error { return nil }
 
 func (adapter *mongoTxAdapter) commit() error {
+	defer adapter.sess.EndSession(nil)
+
 	err := adapter.sess.CommitTransaction(nil)
 	if err != nil {
 		return errorY.Wrap(errorY.ErrSystem, err.Error())
 	}
 
-	adapter.sess.EndSession(nil)
 	return nil
 }
 
@@ -117,6 +118,7 @@ func (adapter *mongoTxAdapter) rollback() error {
 	if err != nil {
 		return errorY.Wrap(errorY.ErrSystem, err.Error())
 	}
+
 	return nil
 }
 

@@ -11,7 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 )
 
-func NewMongo(cfg *MongoConfig) (*mongo.Client, error) {
+func NewReplicaSetMongo(cfg *ReplicaSetMongoConfig) (*mongo.Client, error) {
 	wConcern := writeconcern.New(writeconcern.WMajority(), writeconcern.J(true), writeconcern.WTimeout(10*time.Second))
 	rConcern := readconcern.Majority()
 
@@ -36,10 +36,10 @@ func NewMongo(cfg *MongoConfig) (*mongo.Client, error) {
 	return client, nil
 }
 
-type MongoConfig struct {
+type ReplicaSetMongoConfig struct {
 	User        string
 	Password    string
-	Address     string
+	Address     string // localhost:27018 or localhost:27017,localhost:27018,localhost:27019
 	ReplicaSet  string
 	MaxPoolSize uint64
 }
@@ -48,11 +48,11 @@ type MongoConfig struct {
 // mongodb://root:1234@localhost:27018
 // or
 // mongodb://root:1234@localhost:27017,localhost:27018,localhost:27019
-func (c *MongoConfig) URI() string {
+func (c *ReplicaSetMongoConfig) URI() string {
 	return fmt.Sprintf("mongodb://%v:%v@%v", c.User, c.Password, c.Address)
 }
 
-func (c *MongoConfig) MaxPoolSize_() uint64 {
+func (c *ReplicaSetMongoConfig) MaxPoolSize_() uint64 {
 	if c.MaxPoolSize <= 0 {
 		const defaultSize = 8
 		return defaultSize

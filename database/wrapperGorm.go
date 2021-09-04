@@ -29,7 +29,6 @@ func (wrapper *WrapperGorm) NewTxContext(ctx context.Context, tx *gorm.DB) (txCt
 // 2. tx 元件來自不同的 database, 那當然無法達成 transaction 的需求, 只能各自處理 sql operation
 //
 // 回傳值 processor, 可以代表 tx or db, 兩者型別都是  *gorm.DB
-// 我覺得 gorm 這設計不太好, 不同用途放在同一個具體型別
 // 其差異請參考下列網址
 // https://gorm.io/docs/method_chaining.html#New-Session-Mode
 func (wrapper *WrapperGorm) GetTxFromCtxAndSelectProcessor(txCtx context.Context) (processor *gorm.DB) {
@@ -38,16 +37,14 @@ func (wrapper *WrapperGorm) GetTxFromCtxAndSelectProcessor(txCtx context.Context
 	}
 
 	if wrapper.ExistTxInsideContext(txCtx) {
-		key := wrapper
-		tx := txCtx.Value(key).(*gorm.DB)
+		tx := txCtx.Value(wrapper).(*gorm.DB)
 		return tx
 	}
 	return wrapper.Unwrap()
 }
 
 func (wrapper *WrapperGorm) ExistTxInsideContext(ctx context.Context) bool {
-	key := wrapper
-	_, ok := ctx.Value(key).(*gorm.DB)
+	_, ok := ctx.Value(wrapper).(*gorm.DB)
 	return ok
 }
 
