@@ -3,7 +3,6 @@ package database
 import (
 	"context"
 
-	_ "github.com/go-sql-driver/mysql"
 	"gorm.io/gorm"
 )
 
