@@ -16,14 +16,12 @@ import (
 )
 
 func Test_txMongo_AutoComplete(t *testing.T) {
-	fixture := testFixture{}
-	config := fixture.mongoConnectConfig()
-	client := fixture.mongoClient(config)
+	client := mongoClient(nil)
 
 	mongoBook := infraBook{}
 	repo := bookMongoRepo{
 		col: client.
-			Database(fixture.dbName()).
+			Database(dbName()).
 			Collection(mongoBook.collectionName()),
 	}
 	txFactory := database.NewMongoTxFactory(client)

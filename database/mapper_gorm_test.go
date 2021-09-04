@@ -3,10 +3,8 @@ package database
 import (
 	"testing"
 
-	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/fatih/structs"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 )
 
 func TestTransformQueryParamToGorm(t *testing.T) {
@@ -22,6 +20,19 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 		param       interface{}
 		expectedSql string
 	}{
+		{
+			name: "struct is embed",
+			param: struct {
+				Embed
+				IsAdmin *bool `xQuery:"is_admin = ?"`
+			}{
+				IsAdmin: &boolFalse,
+				Embed: Embed{
+					Age: 30,
+				},
+			},
+			expectedSql: "SELECT * FROM `book` WHERE age = ? AND is_admin = ?",
+		},
 		{
 			name: "search null",
 			param: struct {
@@ -50,28 +61,6 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 			expectedSql: "SELECT * FROM `book`",
 		},
 		{
-			name: "struct is embed",
-			param: struct {
-				IsAdmin bool `xQuery:"is_admin = ?"`
-				Embed
-			}{
-				IsAdmin: false,
-				Embed: Embed{
-					Age: 30,
-				},
-			},
-			expectedSql: "SELECT * FROM `book` WHERE age = ?",
-		},
-		{
-			name: "bool is false",
-			param: struct {
-				IsAdmin bool `xQuery:"is_admin = ?"`
-			}{
-				IsAdmin: false,
-			},
-			expectedSql: "SELECT * FROM `book`",
-		},
-		{
 			name: "bool is pointer and nil",
 			param: struct {
 				IsAdmin *bool `xQuery:"is_admin = ?"`
@@ -88,6 +77,15 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 				IsAdmin: &boolFalse,
 			},
 			expectedSql: "SELECT * FROM `book` WHERE is_admin = ?",
+		},
+		{
+			name: "bool is false",
+			param: struct {
+				IsAdmin bool `xQuery:"is_admin = ?"`
+			}{
+				IsAdmin: false,
+			},
+			expectedSql: "SELECT * FROM `book`",
 		},
 		{
 			name: "int is pointer and nil",
@@ -141,18 +139,7 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 		},
 	}
 
-	sqlDB, _, err := sqlmock.New()
-	assert.NoError(t, err)
-	defer sqlDB.Close()
-
-	db, err := gorm.Open(
-		mysql.New(mysql.Config{SkipInitializeWithVersion: true, Conn: sqlDB}),
-		&gorm.Config{},
-	)
-	assert.NoError(t, err)
-
-	// https://gorm.io/docs/sql_builder.html#DryRun-Mode
-	db = db.Session(&gorm.Session{DryRun: true}).Debug()
+	db := mockGorm(false)
 
 	for _, tt := range tests {
 		tt := tt
@@ -168,4 +155,39 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 			assert.Equal(t, tt.expectedSql, actualSql)
 		})
 	}
+}
+
+func TestUpdatedValue(t *testing.T) {
+	type Person struct {
+		ID      int
+		Name    string
+		Money   int
+		Email   string
+		IsAdmin bool
+
+		Before map[string]interface{} `gorm:"-"`
+	}
+
+	man := &Person{
+		ID:      3,
+		Name:    "caesar",
+		Money:   38,
+		Email:   "x246libra@hotmail.com",
+		IsAdmin: true,
+	}
+	man.Before = structs.New(man).Map()
+
+	man.Name = "peter"
+	man.Money = 0
+	man.IsAdmin = false
+
+	diff := UpdatedValue(man.Before, man)
+
+	db := mockGorm(true)
+	result := db.Table("person").Where("id = ?", man.ID).Updates(diff)
+	assert.NoError(t, result.Error)
+
+	actualSql := result.Statement.SQL.String()
+	expected := "UPDATE `person` SET `IsAdmin`=?,`Money`=?,`Name`=? WHERE id = ?"
+	assert.Equal(t, expected, actualSql)
 }

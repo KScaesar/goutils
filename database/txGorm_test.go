@@ -13,8 +13,7 @@ import (
 )
 
 func Test_txGorm_AutoComplete(t *testing.T) {
-	fixture := testFixture{}
-	db := fixture.pgGorm()
+	db := pgGorm(nil)
 
 	// https://gorm.io/docs/migration.html#Tables
 	sqlBook := &infraBook{}

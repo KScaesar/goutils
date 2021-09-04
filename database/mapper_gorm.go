@@ -21,8 +21,8 @@ func TransformQueryParamToGorm(param interface{}) []func(db *gorm.DB) *gorm.DB {
 		}
 
 		if field.IsEmbedded() {
-			sub := TransformQueryParamToGorm(field.Value())
-			where = append(where, sub...)
+			embed := TransformQueryParamToGorm(field.Value())
+			where = append(where, embed...)
 			continue
 		}
 
@@ -35,4 +35,16 @@ func TransformQueryParamToGorm(param interface{}) []func(db *gorm.DB) *gorm.DB {
 	}
 
 	return where
+}
+
+func UpdatedValue(before map[string]interface{}, after interface{}) map[string]interface{} {
+	diff := make(map[string]interface{})
+	tool := structs.New(after)
+	tool.TagName = "gorm"
+	for key, v := range tool.Map() {
+		if before[key] != v {
+			diff[key] = v
+		}
+	}
+	return diff
 }
