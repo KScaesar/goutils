@@ -86,11 +86,13 @@ func (adapter *mongoTxAdapter) ManualComplete(
 	}
 
 	if adapter.isMongoSession(ctx) {
+		adapter.sess.EndSession(ctx)
 		return adapter.doNothing, adapter.doNothing, fn(ctx)
 	}
 
 	err := adapter.sess.StartTransaction()
 	if err != nil {
+		adapter.sess.EndSession(ctx)
 		return adapter.doNothing, adapter.doNothing, errorY.Wrap(errorY.ErrSystem, err.Error())
 	}
 
