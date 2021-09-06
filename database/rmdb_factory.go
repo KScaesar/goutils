@@ -69,7 +69,7 @@ func (c *RMDBConfig) MysqlDSN() string {
 }
 
 func (c *RMDBConfig) GormPgDSN() string {
-	return fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s sslmode=disable", c.User, c.Password, c.Host, c.Port, c.Database)
+	return fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s lock_timeout=5000 idle_in_transaction_session_timeout=10000 sslmode=disable", c.User, c.Password, c.Host, c.Port, c.Database)
 }
 
 func (c *RMDBConfig) MaxConn_() int {

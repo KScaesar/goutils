@@ -12,7 +12,7 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 	IntZero := 0
 
 	type Embed struct {
-		Age int `xQuery:"age = ?"`
+		Age int `rdb:"age = ?"`
 	}
 
 	tests := []struct {
@@ -24,7 +24,7 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 			name: "struct is embed",
 			param: struct {
 				Embed
-				IsAdmin *bool `xQuery:"is_admin = ?"`
+				IsAdmin *bool `rdb:"is_admin = ?"`
 			}{
 				IsAdmin: &boolFalse,
 				Embed: Embed{
@@ -36,7 +36,7 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 		{
 			name: "search null",
 			param: struct {
-				OccurredAt string `xQuery:"occurred_at is ?"`
+				OccurredAt string `rdb:"occurred_at is ?"`
 			}{
 				OccurredAt: "null",
 			},
@@ -45,7 +45,7 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 		{
 			name: "string have a value",
 			param: struct {
-				Name string `xQuery:"name = ?"`
+				Name string `rdb:"name = ?"`
 			}{
 				Name: "haha",
 			},
@@ -54,7 +54,7 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 		{
 			name: "string is empty",
 			param: struct {
-				Name string `xQuery:"name = ?"`
+				Name string `rdb:"name = ?"`
 			}{
 				Name: "",
 			},
@@ -63,7 +63,7 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 		{
 			name: "bool is pointer and nil",
 			param: struct {
-				IsAdmin *bool `xQuery:"is_admin = ?"`
+				IsAdmin *bool `rdb:"is_admin = ?"`
 			}{
 				IsAdmin: nil,
 			},
@@ -72,7 +72,7 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 		{
 			name: "bool is pointer and false",
 			param: struct {
-				IsAdmin *bool `xQuery:"is_admin = ?"`
+				IsAdmin *bool `rdb:"is_admin = ?"`
 			}{
 				IsAdmin: &boolFalse,
 			},
@@ -81,7 +81,7 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 		{
 			name: "bool is false",
 			param: struct {
-				IsAdmin bool `xQuery:"is_admin = ?"`
+				IsAdmin bool `rdb:"is_admin = ?"`
 			}{
 				IsAdmin: false,
 			},
@@ -90,7 +90,7 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 		{
 			name: "int is pointer and nil",
 			param: struct {
-				Age *int `xQuery:"age = ?"`
+				Age *int `rdb:"age = ?"`
 			}{
 				Age: nil,
 			},
@@ -99,7 +99,7 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 		{
 			name: "search int == 0, need to int type is pointer",
 			param: struct {
-				Age *int `xQuery:"age = ?"`
+				Age *int `rdb:"age = ?"`
 			}{
 				Age: &IntZero,
 			},
@@ -108,7 +108,7 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 		{
 			name: "int is zero",
 			param: struct {
-				Age int `xQuery:"age = ?"`
+				Age int `rdb:"age = ?"`
 			}{
 				Age: 0,
 			},
@@ -117,7 +117,7 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 		{
 			name: "id slice not nil",
 			param: struct {
-				IDSet []int `xQuery:"id In (?)"`
+				IDSet []int `rdb:"id In (?)"`
 			}{
 				IDSet: []int{2, 4, 5},
 			},
@@ -126,7 +126,7 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 		{
 			name: "id slice is nil",
 			param: struct {
-				IDSet []int `xQuery:"id In (?)"`
+				IDSet []int `rdb:"id In (?)"`
 			}{
 				IDSet: nil,
 			},
