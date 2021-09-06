@@ -148,7 +148,7 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 
 			where := TransformQueryParamToGorm(tt.param)
 
-			data := map[string]interface{}{}
+			var data []map[string]interface{}
 			stmt := db.Table("book").Scopes(where...).Find(&data).Statement
 			actualSql := stmt.SQL.String()
 
