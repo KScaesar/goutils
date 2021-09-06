@@ -1,5 +1,9 @@
 package errors
 
+import (
+	"sync"
+)
+
 // Stacks 取出所有 Wrap 時, 記錄的 stack
 func Stacks(err error) []Stack {
 	pgkStacks := getPkgStacks(err)
@@ -50,7 +54,7 @@ func transformPgkStack(iStack pkgErrStack) Stack {
 	// 所以 i 從 1 開始
 	for i := 1; i <= last; i++ {
 		frame, _ := pgkStack[i].MarshalText()
-		if canRemoveFrame(frame) {
+		if defaultChecker.canRemove(frame) {
 			continue
 		}
 		frame = append(frame, ' ')
@@ -59,23 +63,36 @@ func transformPgkStack(iStack pkgErrStack) Stack {
 	return stack
 }
 
-// canRemoveFrame return true means that the frame can be removed,
+var defaultChecker removeFrameChecker
+
+func RegisterFrameFilter(filter ...FrameFilter) {
+	defaultChecker.addRule(filter...)
+}
+
+// FrameFilter return true 表示 error stack 要過濾 這個 frame, 不希望它出現
+type FrameFilter func(frame []byte) bool
+
+type removeFrameChecker struct {
+	mu      sync.RWMutex
+	filters []FrameFilter
+}
+
+func (checker *removeFrameChecker) addRule(f ...FrameFilter) {
+	checker.mu.Lock()
+	defer checker.mu.Unlock()
+	checker.filters = append(checker.filters, f...)
+}
+
+// canRemove return true means that the frame can be removed,
 // the function does not perform deletion, it is query semantics
-func canRemoveFrame(frame []byte) bool {
-	for _, filter := range filters {
+func (checker *removeFrameChecker) canRemove(frame []byte) bool {
+	checker.mu.RLock()
+	defer checker.mu.RUnlock()
+
+	for _, filter := range checker.filters {
 		if filter(frame) {
 			return true
 		}
 	}
 	return false
 }
-
-var filters []FrameFilter
-
-// RegisterFrameFilter is not goroutine safe and should call this function on start of program
-func RegisterFrameFilter(filter ...FrameFilter) {
-	filters = append(filters, filter...)
-}
-
-// FrameFilter return true 表示 error stack 要過濾 這個 frame, 不希望它出現
-type FrameFilter func(frame []byte) bool

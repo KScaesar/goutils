@@ -9,8 +9,8 @@ import (
 func extractError(src *compute.Operation) error {
 	if src.Status != "DONE" {
 		return errors.Wrap(
-			errors.ErrSystem,
-			"developer should make sure that the status is DONE",
+			errors.ErrCoding,
+			"the status must be 'DONE'",
 		)
 	}
 
