@@ -12,12 +12,14 @@ import (
 )
 
 func NewReplicaSetMongo(cfg *ReplicaSetMongoConfig) (*mongo.Client, error) {
+	cfg.setDefaultValue()
+
 	wConcern := writeconcern.New(writeconcern.WMajority(), writeconcern.J(true), writeconcern.WTimeout(10*time.Second))
 	rConcern := readconcern.Majority()
 
 	opt := options.Client().
 		SetServerSelectionTimeout(10 * time.Second).
-		SetMaxPoolSize(cfg.MaxPoolSize_()).
+		SetMaxPoolSize(cfg.MaxPoolSize).
 		SetWriteConcern(wConcern).
 		SetReadConcern(rConcern).
 		SetReplicaSet(cfg.ReplicaSet).
@@ -44,18 +46,17 @@ type ReplicaSetMongoConfig struct {
 	MaxPoolSize uint64
 }
 
+func (c *ReplicaSetMongoConfig) setDefaultValue() {
+	if c.MaxPoolSize <= 0 {
+		const default_ = 8
+		c.MaxPoolSize = default_
+	}
+}
+
 // URI format:
 // mongodb://root:1234@localhost:27018
 // or
 // mongodb://root:1234@localhost:27017,localhost:27018,localhost:27019
 func (c *ReplicaSetMongoConfig) URI() string {
 	return fmt.Sprintf("mongodb://%v:%v@%v", c.User, c.Password, c.Address)
-}
-
-func (c *ReplicaSetMongoConfig) MaxPoolSize_() uint64 {
-	if c.MaxPoolSize <= 0 {
-		const defaultSize = 8
-		return defaultSize
-	}
-	return c.MaxPoolSize
 }

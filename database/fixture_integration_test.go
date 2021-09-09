@@ -67,7 +67,7 @@ func mysqlGorm(cfg *database.RMDBConfig) *database.WrapperGorm {
 		}
 	}
 
-	db, err := database.NewGormMysql(cfg)
+	db, err := database.NewGormMysql(cfg, true)
 	if err != nil {
 		panic(err)
 	}

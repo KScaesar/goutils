@@ -20,10 +20,12 @@ func MockGorm(debug bool) *gorm.DB {
 	mock.ExpectCommit()
 
 	db, err := gorm.Open(
-		mysql.New(mysql.Config{
-			Conn:                      sqlDB,
-			SkipInitializeWithVersion: true,
-		}),
+		mysql.New(
+			mysql.Config{
+				Conn:                      sqlDB,
+				SkipInitializeWithVersion: true,
+			},
+		),
 		&gorm.Config{
 			DryRun: true,
 		},

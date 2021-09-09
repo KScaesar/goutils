@@ -10,18 +10,14 @@ type RMDBConfig struct {
 	MaxIdleConn int
 }
 
-func (c *RMDBConfig) MaxConn_() int {
+func (c *RMDBConfig) setDefaultValue() {
 	if c.MaxConn <= 0 {
-		const defaultSize = 8
-		return defaultSize
+		const default_ = 8
+		c.MaxConn = default_
 	}
-	return c.MaxConn
-}
 
-func (c *RMDBConfig) MaxIdleConn_() int {
-	if c.MaxConn <= 0 {
-		const defaultSize = 4
-		return defaultSize
+	if c.MaxIdleConn <= 0 {
+		const default_ = 4
+		c.MaxIdleConn = default_
 	}
-	return c.MaxIdleConn
 }

@@ -9,12 +9,19 @@ import (
 	"gorm.io/gorm"
 )
 
-func mysqlDSN(c *RMDBConfig) string {
-	return fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?parseTime=true&loc=Local&charset=utf8mb4", c.User, c.Password, c.Host, c.Port, c.Database)
-}
+func NewGormMysql(cfg *RMDBConfig, debug bool) (*WrapperGorm, error) {
+	cfg.setDefaultValue()
 
-func NewGormMysql(cfg *RMDBConfig) (*WrapperGorm, error) {
-	sqlDB, err := sql.Open("mysql", mysqlDSN(cfg))
+	dsn := fmt.Sprintf(
+		"%v:%v@tcp(%v:%v)/%v?parseTime=true&loc=Local&charset=utf8mb4",
+		cfg.User,
+		cfg.Password,
+		cfg.Host,
+		cfg.Port,
+		cfg.Database,
+	)
+
+	sqlDB, err := sql.Open("mysql", dsn)
 	if err != nil {
 		return nil, err
 	}
@@ -24,8 +31,8 @@ func NewGormMysql(cfg *RMDBConfig) (*WrapperGorm, error) {
 		return nil, err
 	}
 
-	sqlDB.SetMaxOpenConns(cfg.MaxConn_())
-	sqlDB.SetMaxIdleConns(cfg.MaxIdleConn_())
+	sqlDB.SetMaxOpenConns(cfg.MaxConn)
+	sqlDB.SetMaxIdleConns(cfg.MaxIdleConn)
 
 	gormDB, err := gorm.Open(
 		mysql.New(mysql.Config{Conn: sqlDB}),
@@ -35,16 +42,27 @@ func NewGormMysql(cfg *RMDBConfig) (*WrapperGorm, error) {
 		return nil, err
 	}
 
+	if debug {
+		gormDB = gormDB.Debug()
+	}
+
 	return &WrapperGorm{gormDB}, nil
 }
 
-func gormPgDSN(c *RMDBConfig) string {
-	return fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s lock_timeout=5000 idle_in_transaction_session_timeout=10000 sslmode=disable", c.User, c.Password, c.Host, c.Port, c.Database)
-}
-
 func NewGormPostgres(cfg *RMDBConfig, debug bool) (*WrapperGorm, error) {
+	cfg.setDefaultValue()
+
+	dsn := fmt.Sprintf(
+		"user=%s password=%s host=%s port=%s dbname=%s lock_timeout=5000 idle_in_transaction_session_timeout=10000 sslmode=disable",
+		cfg.User,
+		cfg.Password,
+		cfg.Host,
+		cfg.Port,
+		cfg.Database,
+	)
+
 	gormDB, err := gorm.Open(
-		postgres.Open(gormPgDSN(cfg)),
+		postgres.Open(dsn),
 		&gorm.Config{},
 	)
 	if err != nil {
@@ -61,8 +79,8 @@ func NewGormPostgres(cfg *RMDBConfig, debug bool) (*WrapperGorm, error) {
 		return nil, err
 	}
 
-	sqlDB.SetMaxOpenConns(cfg.MaxConn_())
-	sqlDB.SetMaxIdleConns(cfg.MaxIdleConn_())
+	sqlDB.SetMaxOpenConns(cfg.MaxConn)
+	sqlDB.SetMaxIdleConns(cfg.MaxIdleConn)
 
 	if debug {
 		gormDB = gormDB.Debug()
