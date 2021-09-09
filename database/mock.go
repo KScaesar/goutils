@@ -6,15 +6,18 @@ import (
 	"gorm.io/gorm"
 )
 
-// mockGorm
+// MockGorm
 //
 // https://stackoverflow.com/questions/58804606/go-unit-tests-call-to-database-transaction-begin-was-not-expected-error
 // https://gorm.io/docs/sql_builder.html#DryRun-Mode
-func mockGorm(debug bool) *gorm.DB {
-	sqlDB, _, err := sqlmock.New()
+func MockGorm(debug bool) *gorm.DB {
+	sqlDB, mock, err := sqlmock.New()
 	if err != nil {
 		panic(err)
 	}
+
+	mock.ExpectBegin()
+	mock.ExpectCommit()
 
 	db, err := gorm.Open(
 		mysql.New(mysql.Config{
@@ -22,8 +25,7 @@ func mockGorm(debug bool) *gorm.DB {
 			SkipInitializeWithVersion: true,
 		}),
 		&gorm.Config{
-			SkipDefaultTransaction: true,
-			DryRun:                 true,
+			DryRun: true,
 		},
 	)
 	if err != nil {

@@ -34,7 +34,7 @@ func NewGormMysql(cfg *RMDBConfig) (*WrapperGorm, error) {
 	return &WrapperGorm{gormDB}, nil
 }
 
-func NewGormPostgres(cfg *RMDBConfig) (*WrapperGorm, error) {
+func NewGormPostgres(cfg *RMDBConfig, debug bool) (*WrapperGorm, error) {
 	gormDB, err := gorm.Open(
 		postgres.Open(cfg.GormPgDSN()),
 		&gorm.Config{},
@@ -50,6 +50,10 @@ func NewGormPostgres(cfg *RMDBConfig) (*WrapperGorm, error) {
 
 	sqlDB.SetMaxOpenConns(cfg.MaxConn_())
 	sqlDB.SetMaxIdleConns(cfg.MaxIdleConn_())
+
+	if debug {
+		gormDB = gormDB.Debug()
+	}
 
 	return &WrapperGorm{gormDB}, nil
 }

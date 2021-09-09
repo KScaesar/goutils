@@ -139,7 +139,7 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 		},
 	}
 
-	db := mockGorm(false)
+	db := MockGorm(false)
 
 	for _, tt := range tests {
 		tt := tt
@@ -183,7 +183,7 @@ func TestUpdatedValue(t *testing.T) {
 
 	diff := UpdatedValue(man.Before, man)
 
-	db := mockGorm(true)
+	db := MockGorm(true)
 	result := db.Table("person").Where("id = ?", man.ID).Updates(diff)
 	assert.NoError(t, result.Error)
 
