@@ -13,8 +13,7 @@ type TxFactory interface {
 //
 // 第一個參數 ctx allow nil,
 // 若 ctx 內部 有 tx 元件, 則使用 原本的 tx;
-// 若 ctx 內部 無 tx 元件, 則產生 全新的 tx,
-// 並將 tx 元件 assign 到 txCtx.
+// 若 ctx 內部 無 tx 元件, 則產生 全新的 tx, 並將 tx 元件 assign 到 txCtx.
 //
 // 第二個參數 fn 中的 txCtx,
 // 保證 txCtx 一定有 tx 元件,
