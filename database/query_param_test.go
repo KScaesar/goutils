@@ -139,14 +139,14 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 		},
 	}
 
-	db := MockGorm(false)
+	db := MockGormMysql(false).Unwrap()
 
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			where := TransformQueryParamToGorm(tt.param)
+			where := TransformWhereParamToGorm(tt.param)
 
 			var data []map[string]interface{}
 			stmt := db.Table("book").Scopes(where...).Find(&data).Statement
@@ -183,7 +183,7 @@ func TestUpdatedValue(t *testing.T) {
 
 	diff := UpdatedValue(man.Before, man)
 
-	db := MockGorm(true)
+	db := MockGormMysql(true).Unwrap()
 	result := db.Table("person").Where("id = ?", man.ID).Updates(diff)
 	assert.NoError(t, result.Error)
 

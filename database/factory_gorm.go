@@ -49,7 +49,7 @@ func NewGormMysql(cfg *RMDBConfig, debug bool) (*WrapperGorm, error) {
 	return &WrapperGorm{gormDB}, nil
 }
 
-func NewGormPostgres(cfg *RMDBConfig, debug bool) (*WrapperGorm, error) {
+func NewGormPgsql(cfg *RMDBConfig, debug bool) (*WrapperGorm, error) {
 	cfg.setDefaultValue()
 
 	dsn := fmt.Sprintf(
