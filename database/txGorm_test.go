@@ -24,7 +24,7 @@ func Test_txGorm_AutoComplete(t *testing.T) {
 	txFactory := database.NewGormTxFactory(db)
 	repo := bookGormRepo{db: db, tableName: sqlBook.TableName()}
 
-	tx, err := txFactory.CreateTx()
+	tx, err := txFactory.CreateTx(nil)
 	assert.NoError(t, err)
 
 	fn := func(name string) func(txCtx context.Context) error {
@@ -47,7 +47,7 @@ func Test_txGorm_AutoComplete(t *testing.T) {
 		}
 	}
 
-	err = tx.AutoComplete(nil, fn("tx"))
+	err = tx.AutoComplete(fn("tx"))
 	assert.NoError(t, err, "enable tx")
 
 	err = fn("noTx")(nil)
@@ -66,5 +66,5 @@ func (repo *bookGormRepo) createBook(ctx context.Context, book *DomainBook) erro
 
 func (repo *bookGormRepo) updateBook(ctx context.Context, book *DomainBook) error {
 	p := repo.db.GetTxFromCtxAndSelectProcessor(ctx)
-	return p.Table(repo.tableName).Model(book).Updates(book).Error
+	return p.Table(repo.tableName).Save(book).Error
 }

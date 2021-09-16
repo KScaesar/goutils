@@ -85,7 +85,7 @@ func pgGorm(cfg *database.RMDBConfig) *database.WrapperGorm {
 		}
 	}
 
-	db, err := database.NewGormPostgres(cfg, true)
+	db, err := database.NewGormPgsql(cfg, true)
 	if err != nil {
 		panic(err)
 	}

@@ -35,22 +35,29 @@ type mongoTxFactory struct {
 	createdSessionOpt *options.SessionOptions
 }
 
-func (f *mongoTxFactory) CreateTx() (Transaction, error) {
+func (f *mongoTxFactory) CreateTx(ctx context.Context) (Transaction, error) {
 	session, err := f.client.StartSession(f.createdSessionOpt)
 	if err != nil {
 		return nil, errors.Wrap(errors.ErrSystem, err.Error())
 	}
-	return &mongoTxAdapter{sess: session}, nil
+
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	return &mongoTxAdapter{
+		sess: session,
+		ctx:  ctx,
+	}, nil
 }
 
 type mongoTxAdapter struct {
 	sess mongo.Session
+	ctx  context.Context
 }
 
-func (adapter *mongoTxAdapter) AutoComplete(ctx context.Context, fn func(txCtx context.Context) error) error {
-	if ctx == nil {
-		ctx = context.Background()
-	}
+func (adapter *mongoTxAdapter) AutoComplete(fn func(txCtx context.Context) error) error {
+	ctx := adapter.ctx
 	defer adapter.sess.EndSession(ctx)
 
 	if adapter.isMongoSession(ctx) {
@@ -73,17 +80,12 @@ func (adapter *mongoTxAdapter) AutoComplete(ctx context.Context, fn func(txCtx c
 	return nil
 }
 
-func (adapter *mongoTxAdapter) ManualComplete(
-	ctx context.Context,
-	fn func(txCtx context.Context) error,
-) (
+func (adapter *mongoTxAdapter) ManualComplete(fn func(txCtx context.Context) error) (
 	commit func() error,
 	rollback func() error,
 	fnErr error,
 ) {
-	if ctx == nil {
-		ctx = context.Background()
-	}
+	ctx := adapter.ctx
 
 	if adapter.isMongoSession(ctx) {
 		adapter.sess.EndSession(ctx)
@@ -103,9 +105,10 @@ func (adapter *mongoTxAdapter) ManualComplete(
 func (adapter *mongoTxAdapter) doNothing() error { return nil }
 
 func (adapter *mongoTxAdapter) commit() error {
-	defer adapter.sess.EndSession(nil)
+	ctx := adapter.ctx
+	defer adapter.sess.EndSession(ctx)
 
-	err := adapter.sess.CommitTransaction(nil)
+	err := adapter.sess.CommitTransaction(ctx)
 	if err != nil {
 		return errors.Wrap(errors.ErrSystem, err.Error())
 	}
@@ -114,9 +117,10 @@ func (adapter *mongoTxAdapter) commit() error {
 }
 
 func (adapter *mongoTxAdapter) rollback() error {
-	defer adapter.sess.EndSession(nil)
+	ctx := adapter.ctx
+	defer adapter.sess.EndSession(ctx)
 
-	err := adapter.sess.AbortTransaction(nil)
+	err := adapter.sess.AbortTransaction(ctx)
 	if err != nil {
 		return errors.Wrap(errors.ErrSystem, err.Error())
 	}

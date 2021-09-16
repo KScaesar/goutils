@@ -26,7 +26,7 @@ func Test_txMongo_AutoComplete(t *testing.T) {
 	}
 	txFactory := database.NewMongoTxFactory(client)
 
-	tx, err := txFactory.CreateTx()
+	tx, err := txFactory.CreateTx(nil)
 	assert.NoError(t, err)
 
 	fn := func(name string) func(txCtx context.Context) error {
@@ -49,7 +49,7 @@ func Test_txMongo_AutoComplete(t *testing.T) {
 		}
 	}
 
-	err = tx.AutoComplete(nil, fn("tx"))
+	err = tx.AutoComplete(fn("tx"))
 	assert.NoError(t, err, "enable tx")
 
 	err = fn("noTx")(nil)

@@ -16,19 +16,26 @@ type gormTxFactory struct {
 	wDB *WrapperGorm
 }
 
-func (f *gormTxFactory) CreateTx() (Transaction, error) {
-	return &gormTxAdapter{wrapperDB: f.wDB, tx: nil}, nil
+func (f *gormTxFactory) CreateTx(ctx context.Context) (Transaction, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	return &gormTxAdapter{
+		wrapperDB: f.wDB,
+		tx:        nil,
+		ctx:       ctx,
+	}, nil
 }
 
 type gormTxAdapter struct {
 	wrapperDB *WrapperGorm
 	tx        *gorm.DB // for ManualComplete
+	ctx       context.Context
 }
 
-func (adapter *gormTxAdapter) AutoComplete(ctx context.Context, fn func(txCtx context.Context) error) error {
-	if ctx == nil {
-		ctx = context.Background()
-	}
+func (adapter *gormTxAdapter) AutoComplete(fn func(txCtx context.Context) error) error {
+	ctx := adapter.ctx
 
 	if adapter.wrapperDB.ExistTxInsideContext(ctx) {
 		return fn(ctx)
@@ -50,17 +57,12 @@ func (adapter *gormTxAdapter) AutoComplete(ctx context.Context, fn func(txCtx co
 	return nil
 }
 
-func (adapter *gormTxAdapter) ManualComplete(
-	ctx context.Context,
-	fn func(txCtx context.Context) error,
-) (
+func (adapter *gormTxAdapter) ManualComplete(fn func(txCtx context.Context) error) (
 	commit func() error,
 	rollback func() error,
 	fnErr error,
 ) {
-	if ctx == nil {
-		ctx = context.Background()
-	}
+	ctx := adapter.ctx
 
 	if adapter.wrapperDB.ExistTxInsideContext(ctx) {
 		return adapter.doNothing, adapter.doNothing, fn(ctx)
