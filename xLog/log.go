@@ -1,4 +1,4 @@
-package logger
+package xLog
 
 import (
 	"io"
@@ -19,7 +19,7 @@ type WrapperLogger struct {
 	zerolog.Logger
 }
 
-func (l WrapperLogger) Prototype() *zerolog.Logger {
+func (l WrapperLogger) Unwrap() *zerolog.Logger {
 	return &l.Logger
 }
 

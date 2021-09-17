@@ -4,11 +4,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Min-Feng/goutils/logger"
+	"github.com/Min-Feng/goutils/xLog"
 )
 
 func TestMain(m *testing.M) {
-	logger.TestingMode()
+	xLog.TestingMode()
 
 	code := m.Run()
 	os.Exit(code)

@@ -1,4 +1,4 @@
-package logger
+package xLog
 
 type Kind int
 

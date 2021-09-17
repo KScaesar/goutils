@@ -1,4 +1,4 @@
-package logger
+package xLog
 
 import (
 	"context"
@@ -10,14 +10,14 @@ import (
 
 type logKey struct{}
 
-func NewLogContext(ctx context.Context, l WrapperLogger) (logCtx context.Context) {
+func ContextWithLogger(ctx context.Context, l WrapperLogger) (logCtx context.Context) {
 	if ctx == nil {
 		ctx = context.Background()
 	}
 	return context.WithValue(ctx, logKey{}, &l)
 }
 
-func FromCtx(logCtx context.Context) WrapperLogger {
+func LoggerFromContext(logCtx context.Context) WrapperLogger {
 	if logCtx == nil {
 		return Logger()
 	}

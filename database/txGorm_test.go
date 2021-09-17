@@ -60,11 +60,11 @@ type bookGormRepo struct {
 }
 
 func (repo *bookGormRepo) createBook(ctx context.Context, book *DomainBook) error {
-	p := repo.db.GetTxFromCtxAndSelectProcessor(ctx)
+	p := repo.db.TxFromContextAndSelectProcessor(ctx)
 	return p.Table(repo.tableName).Create(book).Error
 }
 
 func (repo *bookGormRepo) updateBook(ctx context.Context, book *DomainBook) error {
-	p := repo.db.GetTxFromCtxAndSelectProcessor(ctx)
+	p := repo.db.TxFromContextAndSelectProcessor(ctx)
 	return p.Table(repo.tableName).Save(book).Error
 }

@@ -2,7 +2,6 @@ package xHttp
 
 import (
 	"bytes"
-	"context"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -10,27 +9,29 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/Min-Feng/goutils/logger"
+	"github.com/Min-Feng/goutils/xLog"
 )
-
-func TraceIDMiddleware(c *gin.Context) {
-	traceIDCtx, traceID := NewTraceIDCtx(c.Request, c.Writer)
-	logger := logger.Logger().TraceID(traceID)
-	c.Request = c.Request.WithContext(logger.NewLogContext(traceIDCtx, logger))
-	c.Next()
-}
 
 const TraceIDHeaderKey = "X-Trace"
 
-func NewTraceIDCtx(r *http.Request, w http.ResponseWriter) (traceIDCtx context.Context, traceID string) {
+func TraceIDFromHeader(r *http.Request, w http.ResponseWriter) (traceID string) {
 	traceID = r.Header.Get(TraceIDHeaderKey)
 	if traceID == "" {
-		traceID = logger.NewTraceID()
+		traceID = xLog.NewTraceID()
 	}
-
 	w.Header().Add(TraceIDHeaderKey, traceID)
-	traceIDCtx = logger.NewTraceIDCtx(r.Context(), traceID)
 	return
+}
+
+func TraceIDMiddleware(c *gin.Context) {
+	traceID := TraceIDFromHeader(c.Request, c.Writer)
+	traceIDCtx := xLog.ContextWithTraceID(c.Request.Context(), traceID)
+
+	log := xLog.Logger().TraceID(traceID)
+	logCtx := xLog.ContextWithLogger(traceIDCtx, log)
+
+	c.Request = c.Request.WithContext(logCtx)
+	c.Next()
 }
 
 type respMultiWriter struct {
@@ -63,7 +64,7 @@ func RecordHTTPInfoMiddleware() gin.HandlerFunc {
 
 		var reqBody bytes.Buffer
 		var respWriter respMultiWriter
-		if logger.IsDebugLevel() {
+		if xLog.IsDebugLevel() {
 			teeReader := io.TeeReader(c.Request.Body, &reqBody)
 			c.Request.Body = ioutil.NopCloser(teeReader)
 
@@ -73,9 +74,9 @@ func RecordHTTPInfoMiddleware() gin.HandlerFunc {
 
 		c.Next()
 
-		log := logger.FromCtx(c.Request.Context())
+		log := xLog.LoggerFromContext(c.Request.Context())
 
-		m1 := &logger.HttpMetricNormal{
+		m1 := &xLog.HttpMetricNormal{
 			Method:   c.Request.Method,
 			URL:      c.Request.URL.Redacted(),
 			ClientIP: c.ClientIP(),
@@ -84,21 +85,21 @@ func RecordHTTPInfoMiddleware() gin.HandlerFunc {
 			TimeCost: time.Now().Sub(start),
 		}
 
-		if logger.IsDebugLevel() && !ContainKeyword(reqBody.Bytes()) {
-			m2 := &logger.HttpMetricDebug{
+		if xLog.IsDebugLevel() && !ContainKeyword(reqBody.Bytes()) {
+			m2 := &xLog.HttpMetricDebug{
 				ReqBody:  reqBody.String(),
 				RespBody: respWriter.body.String(),
 			}
-			log.RecordHttpInfo(m1, m2).Prototype().Debug().Send()
+			log.RecordHttpInfo(m1, m2).Unwrap().Debug().Send()
 		}
 
 		status := c.Writer.Status()
 		if status >= http.StatusBadRequest {
-			log.RecordHttpInfo(m1, nil).Prototype().Error().Send()
+			log.RecordHttpInfo(m1, nil).Unwrap().Error().Send()
 			return
 		}
 
-		log.RecordHttpInfo(m1, nil).Prototype().Info().Send()
+		log.RecordHttpInfo(m1, nil).Unwrap().Info().Send()
 	}
 
 }

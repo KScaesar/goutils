@@ -42,7 +42,7 @@ func (adapter *gormTxAdapter) AutoComplete(fn func(txCtx context.Context) error)
 	}
 
 	gormTxFn := func(tx *gorm.DB) error {
-		txCtx := adapter.wrapperDB.NewTxContext(ctx, tx)
+		txCtx := adapter.wrapperDB.ContextWithTx(ctx, tx)
 		return fn(txCtx)
 	}
 
@@ -73,7 +73,7 @@ func (adapter *gormTxAdapter) ManualComplete(fn func(txCtx context.Context) erro
 		return adapter.doNothing, adapter.doNothing, errors.Wrap(errors.ErrSystem, err.Error())
 	}
 
-	txCtx := adapter.wrapperDB.NewTxContext(ctx, adapter.tx)
+	txCtx := adapter.wrapperDB.ContextWithTx(ctx, adapter.tx)
 	return adapter.commit, adapter.rollback, fn(txCtx)
 }
 
