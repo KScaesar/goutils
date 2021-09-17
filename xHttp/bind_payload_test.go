@@ -1,4 +1,4 @@
-package httpY
+package xHttp
 
 import (
 	"bytes"

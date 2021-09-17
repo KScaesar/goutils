@@ -1,14 +1,14 @@
-package httpY_test
+package xHttp_test
 
 import (
 	"os"
 	"testing"
 
-	"github.com/Min-Feng/goutils/logY"
+	"github.com/Min-Feng/goutils/logger"
 )
 
 func TestMain(m *testing.M) {
-	logY.TestingMode()
+	logger.TestingMode()
 
 	code := m.Run()
 	os.Exit(code)

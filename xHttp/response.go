@@ -1,4 +1,4 @@
-package httpY
+package xHttp
 
 import (
 	"github.com/Min-Feng/goutils/errors"

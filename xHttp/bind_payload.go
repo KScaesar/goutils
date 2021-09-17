@@ -1,10 +1,10 @@
-package httpY
+package xHttp
 
 import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/Min-Feng/goutils/errors"
-	"github.com/Min-Feng/goutils/logY"
+	"github.com/Min-Feng/goutils/logger"
 )
 
 // BindPayload
@@ -13,7 +13,7 @@ import (
 func BindPayload(c *gin.Context, obj interface{}) bool {
 	if err := c.ShouldBind(obj); err != nil {
 		Err := errors.Wrap(errors.ErrInvalidParams, "bind payload: %v", err)
-		SendErrorResponseBase(c, Err, 1, logY.KindHTTP)
+		SendErrorResponseBase(c, Err, 1, logger.KindHTTP)
 		return false
 	}
 	return true

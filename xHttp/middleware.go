@@ -1,4 +1,4 @@
-package httpY
+package xHttp
 
 import (
 	"bytes"
@@ -10,13 +10,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/Min-Feng/goutils/logY"
+	"github.com/Min-Feng/goutils/logger"
 )
 
 func TraceIDMiddleware(c *gin.Context) {
 	traceIDCtx, traceID := NewTraceIDCtx(c.Request, c.Writer)
-	logger := logY.Logger().TraceID(traceID)
-	c.Request = c.Request.WithContext(logY.NewLogContext(traceIDCtx, logger))
+	logger := logger.Logger().TraceID(traceID)
+	c.Request = c.Request.WithContext(logger.NewLogContext(traceIDCtx, logger))
 	c.Next()
 }
 
@@ -25,11 +25,11 @@ const TraceIDHeaderKey = "X-Trace"
 func NewTraceIDCtx(r *http.Request, w http.ResponseWriter) (traceIDCtx context.Context, traceID string) {
 	traceID = r.Header.Get(TraceIDHeaderKey)
 	if traceID == "" {
-		traceID = logY.NewTraceID()
+		traceID = logger.NewTraceID()
 	}
 
 	w.Header().Add(TraceIDHeaderKey, traceID)
-	traceIDCtx = logY.NewTraceIDCtx(r.Context(), traceID)
+	traceIDCtx = logger.NewTraceIDCtx(r.Context(), traceID)
 	return
 }
 
@@ -63,7 +63,7 @@ func RecordHTTPInfoMiddleware() gin.HandlerFunc {
 
 		var reqBody bytes.Buffer
 		var respWriter respMultiWriter
-		if logY.IsDebugLevel() {
+		if logger.IsDebugLevel() {
 			teeReader := io.TeeReader(c.Request.Body, &reqBody)
 			c.Request.Body = ioutil.NopCloser(teeReader)
 
@@ -73,9 +73,9 @@ func RecordHTTPInfoMiddleware() gin.HandlerFunc {
 
 		c.Next()
 
-		log := logY.FromCtx(c.Request.Context())
+		log := logger.FromCtx(c.Request.Context())
 
-		m1 := &logY.HttpMetricNormal{
+		m1 := &logger.HttpMetricNormal{
 			Method:   c.Request.Method,
 			URL:      c.Request.URL.Redacted(),
 			ClientIP: c.ClientIP(),
@@ -84,8 +84,8 @@ func RecordHTTPInfoMiddleware() gin.HandlerFunc {
 			TimeCost: time.Now().Sub(start),
 		}
 
-		if logY.IsDebugLevel() && !ContainKeyword(reqBody.Bytes()) {
-			m2 := &logY.HttpMetricDebug{
+		if logger.IsDebugLevel() && !ContainKeyword(reqBody.Bytes()) {
+			m2 := &logger.HttpMetricDebug{
 				ReqBody:  reqBody.String(),
 				RespBody: respWriter.body.String(),
 			}
