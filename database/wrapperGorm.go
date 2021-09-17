@@ -6,6 +6,10 @@ import (
 	"gorm.io/gorm"
 )
 
+func NewWrapperGorm(db *gorm.DB) *WrapperGorm {
+	return &WrapperGorm{db: db}
+}
+
 type WrapperGorm struct {
 	db *gorm.DB
 }

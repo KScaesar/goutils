@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Min-Feng/goutils/errors"
-	"github.com/Min-Feng/goutils/testingY"
+	"github.com/Min-Feng/goutils/xTest"
 )
 
 func TestSendErrorResponse(t *testing.T) {
@@ -17,7 +17,7 @@ func TestSendErrorResponse(t *testing.T) {
 	gin.SetMode("release")
 	router := gin.New()
 	router.POST("/hello", helloHandlerUseCaseFailed)
-	resp, status := testingY.HttpClientDoJson(router, http.MethodPost, "/hello", nil)
+	resp, status := xTest.HttpClientDoJson(router, http.MethodPost, "/hello", nil)
 
 	expectedResp := `
 {

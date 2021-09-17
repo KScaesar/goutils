@@ -5,6 +5,8 @@ import (
 
 	"github.com/fatih/structs"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/Min-Feng/goutils/xTest"
 )
 
 func TestTransformQueryParamToGorm(t *testing.T) {
@@ -139,7 +141,7 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 		},
 	}
 
-	db := MockGormMysql(false).Unwrap()
+	db := xTest.MockGormMysql(false).Unwrap()
 
 	for _, tt := range tests {
 		tt := tt
@@ -183,7 +185,7 @@ func TestUpdatedValue(t *testing.T) {
 
 	diff := UpdatedValue(man.Before, man)
 
-	db := MockGormMysql(true).Unwrap()
+	db := xTest.MockGormMysql(true).Unwrap()
 	result := db.Table("person").Where("id = ?", man.ID).Updates(diff)
 	assert.NoError(t, result.Error)
 

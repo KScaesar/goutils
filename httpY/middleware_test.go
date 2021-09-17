@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Min-Feng/goutils/testingY"
+	"github.com/Min-Feng/goutils/xTest"
 )
 
 func TestMiddleware_Success(t *testing.T) {
@@ -20,7 +20,7 @@ func TestMiddleware_Success(t *testing.T) {
 	router.POST("/hello", TraceIDMiddleware, RecordHTTPInfoMiddleware(), helloHandlerSuccess)
 
 	body := bytes.NewBufferString(`{"name":"caesar"}`)
-	resp, status := testingY.HttpClientDoJson(router, http.MethodPost, "/hello", body)
+	resp, status := xTest.HttpClientDoJson(router, http.MethodPost, "/hello", body)
 
 	expectedResp := `
 {

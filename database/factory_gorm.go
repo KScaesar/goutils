@@ -46,7 +46,7 @@ func NewGormMysql(cfg *RMDBConfig, debug bool) (*WrapperGorm, error) {
 		gormDB = gormDB.Debug()
 	}
 
-	return &WrapperGorm{gormDB}, nil
+	return NewWrapperGorm(gormDB), nil
 }
 
 func NewGormPgsql(cfg *RMDBConfig, debug bool) (*WrapperGorm, error) {
@@ -86,5 +86,5 @@ func NewGormPgsql(cfg *RMDBConfig, debug bool) (*WrapperGorm, error) {
 		gormDB = gormDB.Debug()
 	}
 
-	return &WrapperGorm{gormDB}, nil
+	return NewWrapperGorm(gormDB), nil
 }

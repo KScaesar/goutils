@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Min-Feng/goutils/testingY"
+	"github.com/Min-Feng/goutils/xTest"
 )
 
 func TestBindPayload_Failed(t *testing.T) {
@@ -20,7 +20,7 @@ func TestBindPayload_Failed(t *testing.T) {
 	router.POST("/hello", TraceIDMiddleware, RecordHTTPInfoMiddleware(), bindFailedHandler)
 
 	body := bytes.NewBuffer([]byte(`{"name":"caesar"}`))
-	resp, status := testingY.HttpClientDoJson(router, http.MethodPost, "/hello", body)
+	resp, status := xTest.HttpClientDoJson(router, http.MethodPost, "/hello", body)
 
 	expectedResp := `
 {

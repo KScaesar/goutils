@@ -10,7 +10,7 @@ import (
 	"github.com/tidwall/gjson"
 
 	"github.com/Min-Feng/goutils/errors"
-	"github.com/Min-Feng/goutils/testingY"
+	"github.com/Min-Feng/goutils/xTest"
 )
 
 //go:generate go test -trimpath -run=TestError -v github.com/Min-Feng/goutils/logY
@@ -20,7 +20,7 @@ func TestError(t *testing.T) {
 	defer DefaultMode()
 
 	zerolog.TimeFieldFormat = CustomTimeFormat // DefaultMode() show=human, 影響 zerolog.TimeFieldFormat
-	zerolog.TimestampFunc = testingY.FakeTimeNow("2021-12-14")
+	zerolog.TimestampFunc = xTest.FakeTimeNow("2021-12-14")
 
 	expected := `
 {
