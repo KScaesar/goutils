@@ -24,8 +24,7 @@ func Test_txGorm_AutoComplete(t *testing.T) {
 	txFactory := database.NewGormTxFactory(db)
 	repo := bookGormRepo{db: db, tableName: sqlBook.TableName()}
 
-	tx, err := txFactory.CreateTx(nil)
-	assert.NoError(t, err)
+	tx := txFactory.CreateTx(nil)
 
 	fn := func(name string) func(txCtx context.Context) error {
 		return func(txCtx context.Context) error {
@@ -47,7 +46,7 @@ func Test_txGorm_AutoComplete(t *testing.T) {
 		}
 	}
 
-	err = tx.AutoComplete(fn("tx"))
+	err := tx.AutoComplete(fn("tx"))
 	assert.NoError(t, err, "enable tx")
 
 	err = fn("noTx")(nil)

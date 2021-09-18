@@ -16,22 +16,19 @@ type gormTxFactory struct {
 	wDB *WrapperGorm
 }
 
-func (f *gormTxFactory) CreateTx(ctx context.Context) (Transaction, error) {
+func (f *gormTxFactory) CreateTx(ctx context.Context) Transaction {
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	return &gormTxAdapter{
-		wrapperDB: f.wDB,
-		tx:        nil,
-		ctx:       ctx,
-	}, nil
+	return &gormTxAdapter{wrapperDB: f.wDB, ctx: ctx}
 }
 
 type gormTxAdapter struct {
 	wrapperDB *WrapperGorm
-	tx        *gorm.DB // for ManualComplete
-	ctx       context.Context
+
+	tx  *gorm.DB
+	ctx context.Context
 }
 
 func (adapter *gormTxAdapter) AutoComplete(fn func(txCtx context.Context) error) error {

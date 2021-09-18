@@ -2,6 +2,7 @@ package xTest
 
 import (
 	"context"
+	"sync"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"gorm.io/driver/mysql"
@@ -76,11 +77,45 @@ func MockGormPgsql(debug bool) *database.WrapperGorm {
 	return database.NewWrapperGorm(db)
 }
 
-type MockTxFactory struct{}
+type MockTxFactory struct {
+	mu        sync.RWMutex
+	SpyTxList []*spyTxAdapter
+}
 
-func (MockTxFactory) CreateTx(ctx context.Context) (database.Transaction, error) {
+func (f *MockTxFactory) CreateTx(ctx context.Context) database.Transaction {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
 	spy := &spyTxAdapter{ctx: ctx}
-	return spy, nil
+	f.SpyTxList = append(f.SpyTxList, spy)
+	return spy
+}
+
+func (f *MockTxFactory) NextSpyInspector() *SpyTxInspector {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
+	spy := f.SpyTxList[0]
+	inspector := &SpyTxInspector{spy}
+
+	f.SpyTxList = append(f.SpyTxList[:0], f.SpyTxList[1:]...)
+	return inspector
+}
+
+func (f *MockTxFactory) TotalSpy() int {
+	f.mu.RLock()
+	defer f.mu.RUnlock()
+	return len(f.SpyTxList)
+}
+
+func (f *MockTxFactory) ClearAllSpy() {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
+	for i := 0; i < len(f.SpyTxList); i++ {
+		f.SpyTxList[i] = nil
+	}
+	f.SpyTxList = f.SpyTxList[:0]
 }
 
 type spyTxAdapter struct {
@@ -111,6 +146,26 @@ func (adapter *spyTxAdapter) ManualComplete(fn func(txCtx context.Context) error
 		return nil
 	}
 	return commit, rollback, fn(adapter.ctx)
+}
+
+type SpyTxInspector struct {
+	spy *spyTxAdapter
+}
+
+func (man SpyTxInspector) DoesTxAutoComplete() bool {
+	return DoesTxAutoComplete(man.spy)
+}
+
+func (man SpyTxInspector) DoesTxManualComplete() bool {
+	return DoesTxManualComplete(man.spy)
+}
+
+func (man SpyTxInspector) DoesTxCommit() bool {
+	return DoesTxCommit(man.spy)
+}
+
+func (man SpyTxInspector) DoesTxRollback() bool {
+	return DoesTxRollback(man.spy)
 }
 
 func DoesTxAutoComplete(tx database.Transaction) bool {
