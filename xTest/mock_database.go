@@ -96,10 +96,9 @@ func (f *MockTxFactory) NextSpyInspector() *SpyTxInspector {
 	defer f.mu.Unlock()
 
 	spy := f.SpyTxList[0]
-	inspector := &SpyTxInspector{spy}
-
-	f.SpyTxList = append(f.SpyTxList[:0], f.SpyTxList[1:]...)
-	return inspector
+	f.SpyTxList[0] = nil
+	f.SpyTxList = f.SpyTxList[1:]
+	return &SpyTxInspector{spy}
 }
 
 func (f *MockTxFactory) TotalSpy() int {
