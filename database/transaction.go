@@ -4,13 +4,13 @@ import (
 	"context"
 )
 
-// TxFactory that lifecycle is equal to process scope
+// TxFactory that lifecycle is equal to process scope, and is goroutine safe.
 //
 // 參數 ctx allow nil,
 // 若 ctx 內部 有 tx 元件, 則使用 原本的 tx;
 // 若 ctx 內部 無 tx 元件, 則產生 全新的 tx, 並將 tx 元件 assign 到 txCtx.
 type TxFactory interface {
-	CreateTx(ctx context.Context) (Transaction, error)
+	CreateTx(ctx context.Context) Transaction
 }
 
 // Transaction lifecycle is equal to request scope, and not goroutine safe.
