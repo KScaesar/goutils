@@ -3,6 +3,7 @@ package identity
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 )
 
@@ -49,6 +50,10 @@ func (p Permission) String() string {
 func NewOwnershipSet(loginUserData ...DataAttribute) OwnershipSet {
 	set := make(OwnershipSet, len(loginUserData))
 	for _, attribute := range loginUserData {
+		_, ok := set[attribute.Name]
+		if ok {
+			panic(fmt.Sprintf("duplicate AttributeKey: %v", attribute.Name))
+		}
 		set[attribute.Name] = attribute.Value
 	}
 	return set
