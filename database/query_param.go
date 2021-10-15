@@ -51,12 +51,13 @@ func TransformWhereParamToGorm(param interface{}) []func(db *gorm.DB) *gorm.DB {
 		return nil
 	}
 
-	if reflect.ValueOf(param).Kind() == reflect.Slice {
-		s := param.(WhereParam)
-		where := make([]func(db *gorm.DB) *gorm.DB, 0, len(s))
-		for sql, v := range s {
+	if reflect.TypeOf(param).Name() == "WhereParam" {
+		slice := param.(WhereParam)
+		where := make([]func(db *gorm.DB) *gorm.DB, 0, len(slice))
+		for _, v := range slice {
+			v := v
 			where = append(where, func(db *gorm.DB) *gorm.DB {
-				return db.Where(sql, v)
+				return db.Where(v.Sql, v.Value)
 			})
 		}
 		return where

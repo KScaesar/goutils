@@ -1,4 +1,4 @@
-package database
+package database_test
 
 import (
 	"testing"
@@ -6,6 +6,7 @@ import (
 	"github.com/fatih/structs"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/Min-Feng/goutils/database"
 	"github.com/Min-Feng/goutils/xTest"
 )
 
@@ -139,6 +140,14 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 			param:       nil,
 			expectedSql: "SELECT * FROM `book`",
 		},
+		{
+			name: "where param",
+			param: database.WhereParam{
+				{"user_id = ?", 123},
+				{"datetime in (?)", []string{"2020-10-17", "2021-09-16"}},
+			},
+			expectedSql: "SELECT * FROM `book` WHERE user_id = ? AND datetime in (?,?)",
+		},
 	}
 
 	db := xTest.MockGormMysql(false).Unwrap()
@@ -148,7 +157,7 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			where := TransformWhereParamToGorm(tt.param)
+			where := database.TransformWhereParamToGorm(tt.param)
 
 			var data []map[string]interface{}
 			stmt := db.Table("book").Scopes(where...).Find(&data).Statement
@@ -183,7 +192,7 @@ func TestUpdatedValue(t *testing.T) {
 	man.Money = 0
 	man.IsAdmin = false
 
-	diff := UpdatedValue(man.Before, man)
+	diff := database.UpdatedValue(man.Before, man)
 
 	db := xTest.MockGormMysql(true).Unwrap()
 	result := db.Table("person").Where("id = ?", man.ID).Updates(diff)
