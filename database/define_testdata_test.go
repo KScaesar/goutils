@@ -11,6 +11,8 @@ import (
 	"github.com/Min-Feng/goutils/database"
 )
 
+var dbName = "integration_test"
+
 type infraBook struct {
 	// DomainBook 必須設為 public
 	// 才能夠被 gorm.Migrator().CreateTable 感知
@@ -22,7 +24,7 @@ func (s *infraBook) TableName() string {
 	return "testing_books"
 }
 
-func (s *infraBook) collectionName() string {
+func (s *infraBook) CollectionName() string {
 	return "testing_books"
 }
 
@@ -33,10 +35,6 @@ type DomainBook struct {
 	NoTzTime time.Time          `gorm:"column:no_tz_time;type:timestamp" bson:"no_tz_time"`
 	TzTime   time.Time          `gorm:"column:tz_time;type:timestamptz"  bson:"tz_time"`
 	UpdateAt time.Time          `gorm:"column:update_at;type:timestamptz;autoUpdateTime"  bson:"update_at"`
-}
-
-func dbName() string {
-	return "integration_test"
 }
 
 func mongoClient(cfg *database.ReplicaSetMongoConfig) *mongo.Client {
@@ -63,7 +61,7 @@ func mysqlGorm(cfg *database.RMDBConfig) *database.WrapperGorm {
 			Password: "1234",
 			Host:     "localhost",
 			Port:     "3306",
-			Database: dbName(),
+			Database: dbName,
 		}
 	}
 
@@ -81,7 +79,7 @@ func pgGorm(cfg *database.RMDBConfig) *database.WrapperGorm {
 			Password: "1234",
 			Host:     "localhost",
 			Port:     "5432",
-			Database: dbName(),
+			Database: dbName,
 		}
 	}
 

@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"sync"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -14,30 +13,73 @@ import (
 	"github.com/Min-Feng/goutils/errors"
 )
 
-func NewMongoTxFactory(client *mongo.Client) TxFactory {
-	return &mongoTxFactory{client: client}
+type MongoTxConfigs struct {
+	SessionTimeout time.Duration
+}
+
+func (c *MongoTxConfigs) setDefaultValue() {
+	if c.SessionTimeout <= 0 {
+		const default_ = 10 * time.Second
+		c.SessionTimeout = default_
+	}
+}
+
+func NewMongoSessionOptByTransaction(timeout time.Duration) *options.SessionOptions {
+	wConcern := writeconcern.New(
+		writeconcern.WMajority(),
+		writeconcern.J(true),
+		writeconcern.WTimeout(timeout),
+	)
+	rConcern := readconcern.Snapshot()
+	rPref := readpref.Primary()
+
+	return options.Session().
+		SetCausalConsistency(true).
+		SetDefaultWriteConcern(wConcern).
+		SetDefaultReadConcern(rConcern).
+		SetDefaultReadPreference(rPref)
+}
+
+func NewMongoTxFactory(client *mongo.Client, cfg *MongoTxConfigs) TxFactory {
+	if cfg == nil {
+		cfg = new(MongoTxConfigs)
+	}
+	cfg.setDefaultValue()
+
+	opt := NewMongoSessionOptByTransaction(cfg.SessionTimeout)
+
+	return &mongoTxFactory{
+		client: client,
+		opt:    opt,
+	}
 }
 
 type mongoTxFactory struct {
 	client *mongo.Client
+	opt    *options.SessionOptions
 }
 
 func (f *mongoTxFactory) CreateTx(ctx context.Context) Transaction {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	return &mongoTxAdapter{client: f.client, ctx: ctx}
+	return &mongoTxAdapter{
+		client: f.client,
+		opt:    f.opt,
+		ctx:    ctx,
+	}
 }
 
 type mongoTxAdapter struct {
 	client *mongo.Client
+	opt    *options.SessionOptions
 
 	sess mongo.Session
 	ctx  context.Context
 }
 
 func (adapter *mongoTxAdapter) createSession() error {
-	session, err := adapter.client.StartSession(DefaultConfig.MongoSessionOptByTransaction())
+	session, err := adapter.client.StartSession(adapter.opt)
 	if err != nil {
 		return errors.Wrap(errors.ErrSystem, err.Error())
 	}
@@ -49,7 +91,7 @@ func (adapter *mongoTxAdapter) createSession() error {
 func (adapter *mongoTxAdapter) AutoComplete(fn func(txCtx context.Context) error) error {
 	ctx := adapter.ctx
 
-	if adapter.isMongoSession(ctx) {
+	if adapter.ExistMongoSessionInsideContext(ctx) {
 		return fn(ctx)
 	}
 
@@ -81,7 +123,7 @@ func (adapter *mongoTxAdapter) ManualComplete(fn func(txCtx context.Context) err
 ) {
 	ctx := adapter.ctx
 
-	if adapter.isMongoSession(ctx) {
+	if adapter.ExistMongoSessionInsideContext(ctx) {
 		return adapter.doNothing, adapter.doNothing, fn(ctx)
 	}
 
@@ -125,35 +167,7 @@ func (adapter *mongoTxAdapter) rollback() error {
 	return nil
 }
 
-func (adapter *mongoTxAdapter) isMongoSession(ctx context.Context) bool {
+func (adapter *mongoTxAdapter) ExistMongoSessionInsideContext(ctx context.Context) bool {
 	_, ok := ctx.(mongo.SessionContext)
 	return ok
-}
-
-type defaultMongoSessionOpt struct {
-	txOnce    sync.Once
-	txDefault *options.SessionOptions
-}
-
-func (value *defaultMongoSessionOpt) MongoSessionOptByTransaction() *options.SessionOptions {
-	value.txOnce.Do(func() {
-		value.txDefault = NewMongoSessionOptByTransaction(10 * time.Second)
-	})
-	return value.txDefault
-}
-
-func NewMongoSessionOptByTransaction(timeout time.Duration) *options.SessionOptions {
-	wConcern := writeconcern.New(
-		writeconcern.WMajority(),
-		writeconcern.J(true),
-		writeconcern.WTimeout(timeout),
-	)
-	rConcern := readconcern.Snapshot()
-	rPref := readpref.Primary()
-
-	return options.Session().
-		SetCausalConsistency(true).
-		SetDefaultWriteConcern(wConcern).
-		SetDefaultReadConcern(rConcern).
-		SetDefaultReadPreference(rPref)
 }

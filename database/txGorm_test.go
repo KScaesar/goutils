@@ -46,11 +46,11 @@ func Test_txGorm_AutoComplete(t *testing.T) {
 		}
 	}
 
-	err := tx.AutoComplete(fn("tx"))
+	err := tx.AutoComplete(fn("enable tx"))
 	assert.NoError(t, err, "enable tx")
 
-	err = fn("noTx")(nil)
-	assert.NoError(t, err, "not enable tx")
+	err = fn("disable tx")(nil)
+	assert.NoError(t, err, "disable tx")
 }
 
 type bookGormRepo struct {

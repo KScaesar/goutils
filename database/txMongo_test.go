@@ -21,10 +21,10 @@ func Test_txMongo_AutoComplete(t *testing.T) {
 	mongoBook := infraBook{}
 	repo := bookMongoRepo{
 		col: client.
-			Database(dbName()).
-			Collection(mongoBook.collectionName()),
+			Database(dbName).
+			Collection(mongoBook.CollectionName()),
 	}
-	txFactory := database.NewMongoTxFactory(client)
+	txFactory := database.NewMongoTxFactory(client, nil)
 
 	tx := txFactory.CreateTx(nil)
 
@@ -48,11 +48,11 @@ func Test_txMongo_AutoComplete(t *testing.T) {
 		}
 	}
 
-	err := tx.AutoComplete(fn("tx"))
+	err := tx.AutoComplete(fn("enable tx"))
 	assert.NoError(t, err, "enable tx")
 
-	err = fn("noTx")(nil)
-	assert.NoError(t, err, "not enable tx")
+	err = fn("disable tx")(nil)
+	assert.NoError(t, err, "disable tx")
 }
 
 type bookMongoRepo struct {
