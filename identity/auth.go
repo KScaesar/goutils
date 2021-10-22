@@ -3,18 +3,27 @@ package identity
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"strings"
 )
 
-type CheckServiceFactory interface {
-	CreateCheckService(ctx context.Context, enable bool) (CheckService, error)
+type AuthServiceFactory interface {
+	CreateAuthService(LoginUser) (AuthService, error)
 }
 
-type CheckService interface {
-	PermissionOk(...Permission) bool
-	OwnershipOk(...DataAttribute) bool
+type AuthService interface {
+	VerifyPermission(...Permission) bool
+	VerifyDataOwnership(...IsMatchDataOwnership) bool
 }
+
+func NewMustPassAuthService() AuthService {
+	return mustPassAuthService{}
+}
+
+type mustPassAuthService struct{}
+
+func (mustPassAuthService) VerifyPermission(...Permission) bool { return true }
+
+func (mustPassAuthService) VerifyDataOwnership(...IsMatchDataOwnership) bool { return true }
 
 func NewPermission(action, data string) Permission {
 	return Permission{action: action, data: data}
@@ -33,8 +42,8 @@ func (p *Permission) UnmarshalJSON(bytes []byte) error {
 	}
 
 	split := strings.Split(s, ":")
-	p.data = split[0]
-	p.action = split[1]
+	p.action = split[0]
+	p.data = split[1]
 	return nil
 }
 
@@ -47,47 +56,37 @@ func (p Permission) String() string {
 	return p.action + ":" + p.data
 }
 
-func NewOwnershipSet(loginUserData ...DataAttribute) OwnershipSet {
-	set := make(OwnershipSet, len(loginUserData))
-	for _, attribute := range loginUserData {
-		_, ok := set[attribute.Name]
-		if ok {
-			panic(fmt.Sprintf("duplicate AttributeKey: %v", attribute.Name))
-		}
-		set[attribute.Name] = attribute.Value
+func LoginUserFromContext(ctx context.Context) LoginUser {
+	return &loginUser{
+		userID: "",
 	}
-	return set
 }
 
-type OwnershipSet map[AttributeKey]interface{}
+type LoginUser interface {
+	UserID() string
+}
 
-func (set OwnershipSet) OwnershipOk(attributes ...DataAttribute) bool {
-	for _, atr := range attributes {
-		if !set.matchAttribute(atr) {
+type loginUser struct {
+	userID string
+}
+
+func (user *loginUser) UserID() string {
+	return user.userID
+}
+
+func verifyLoginUserDataOwnership(user LoginUser, fns ...IsMatchDataOwnership) bool {
+	for _, isMatch := range fns {
+		if !isMatch(user) {
 			return false
 		}
 	}
 	return true
 }
 
-func (set OwnershipSet) matchAttribute(atr DataAttribute) bool {
-	return set[atr.Name] == atr.Value
-}
+type IsMatchDataOwnership func(LoginUser) bool
 
-type AttributeKey string
-
-type DataAttribute struct {
-	Name  AttributeKey
-	Value interface{}
-}
-
-const (
-	AttributeKeyUser AttributeKey = "user_id"
-)
-
-func AttributeUserID(userID string) DataAttribute {
-	return DataAttribute{
-		Name:  AttributeKeyUser,
-		Value: userID,
+func IsMatchUserID(userID string) IsMatchDataOwnership {
+	return func(user LoginUser) bool {
+		return user.UserID() == userID
 	}
 }

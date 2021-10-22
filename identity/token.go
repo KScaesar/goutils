@@ -6,9 +6,11 @@ import (
 	"github.com/Min-Feng/goutils"
 )
 
-var (
-	TokenKindAccess  = "Access"
-	TokenKindRefresh = "Refresh"
+type TokenKind string
+
+const (
+	TokenKindAccess  TokenKind = "Access"
+	TokenKindRefresh TokenKind = "Refresh"
 )
 
 type TokenConfig struct {
@@ -33,7 +35,7 @@ func NewRefreshToken(id goutils.ID) Token {
 }
 
 type Token struct {
-	Kind     string
+	Kind     TokenKind
 	UserID   goutils.ID
 	DeadLine time.Time
 }

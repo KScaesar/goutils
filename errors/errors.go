@@ -18,6 +18,6 @@ var (
 	ErrInvalidParams = New(
 		1003,
 		http.StatusBadRequest,
-		"invalid params",
+		"invalid parameter",
 	)
 )
