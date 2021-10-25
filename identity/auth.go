@@ -15,15 +15,15 @@ type AuthService interface {
 	VerifyDataOwnership(...IsMatchDataOwnership) bool
 }
 
-func NewMustPassAuthService() AuthService {
-	return mustPassAuthService{}
+func NewAlwaysSuccessfulAuthService() AuthService {
+	return alwaysSuccessfulAuthService{}
 }
 
-type mustPassAuthService struct{}
+type alwaysSuccessfulAuthService struct{}
 
-func (mustPassAuthService) VerifyPermission(...Permission) bool { return true }
+func (alwaysSuccessfulAuthService) VerifyPermission(...Permission) bool { return true }
 
-func (mustPassAuthService) VerifyDataOwnership(...IsMatchDataOwnership) bool { return true }
+func (alwaysSuccessfulAuthService) VerifyDataOwnership(...IsMatchDataOwnership) bool { return true }
 
 func NewPermission(action, data string) Permission {
 	return Permission{action: action, data: data}
@@ -56,7 +56,7 @@ func (p Permission) String() string {
 	return p.action + ":" + p.data
 }
 
-func LoginUserFromContext(ctx context.Context) LoginUser {
+func GetLoginUserFromJwtToken(ctx context.Context) LoginUser {
 	return &loginUser{
 		userID: "",
 	}
@@ -85,7 +85,7 @@ func verifyLoginUserDataOwnership(user LoginUser, fns ...IsMatchDataOwnership) b
 
 type IsMatchDataOwnership func(LoginUser) bool
 
-func IsMatchUserID(userID string) IsMatchDataOwnership {
+func DataOwnershipBelongUser(userID string) IsMatchDataOwnership {
 	return func(user LoginUser) bool {
 		return user.UserID() == userID
 	}
