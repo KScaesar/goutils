@@ -24,6 +24,20 @@ func (c *MongoTxConfigs) setDefaultValue() {
 	}
 }
 
+func NewMongoTxFactory(client *mongo.Client, cfg *MongoTxConfigs) TxFactory {
+	if cfg == nil {
+		cfg = new(MongoTxConfigs)
+	}
+	cfg.setDefaultValue()
+
+	opt := NewMongoSessionOptByTransaction(cfg.SessionTimeout)
+
+	return &mongoTxFactory{
+		client: client,
+		opt:    opt,
+	}
+}
+
 func NewMongoSessionOptByTransaction(timeout time.Duration) *options.SessionOptions {
 	wConcern := writeconcern.New(
 		writeconcern.WMajority(),
@@ -38,20 +52,6 @@ func NewMongoSessionOptByTransaction(timeout time.Duration) *options.SessionOpti
 		SetDefaultWriteConcern(wConcern).
 		SetDefaultReadConcern(rConcern).
 		SetDefaultReadPreference(rPref)
-}
-
-func NewMongoTxFactory(client *mongo.Client, cfg *MongoTxConfigs) TxFactory {
-	if cfg == nil {
-		cfg = new(MongoTxConfigs)
-	}
-	cfg.setDefaultValue()
-
-	opt := NewMongoSessionOptByTransaction(cfg.SessionTimeout)
-
-	return &mongoTxFactory{
-		client: client,
-		opt:    opt,
-	}
 }
 
 type mongoTxFactory struct {
@@ -76,16 +76,6 @@ type mongoTxAdapter struct {
 
 	sess mongo.Session
 	ctx  context.Context
-}
-
-func (adapter *mongoTxAdapter) createSession() error {
-	session, err := adapter.client.StartSession(adapter.opt)
-	if err != nil {
-		return errors.Wrap(errors.ErrSystem, err.Error())
-	}
-
-	adapter.sess = session
-	return nil
 }
 
 func (adapter *mongoTxAdapter) AutoComplete(fn func(txCtx context.Context) error) error {
@@ -113,6 +103,16 @@ func (adapter *mongoTxAdapter) AutoComplete(fn func(txCtx context.Context) error
 		return err
 	}
 
+	return nil
+}
+
+func (adapter *mongoTxAdapter) createSession() error {
+	session, err := adapter.client.StartSession(adapter.opt)
+	if err != nil {
+		return errors.Wrap(errors.ErrSystem, err.Error())
+	}
+
+	adapter.sess = session
 	return nil
 }
 
