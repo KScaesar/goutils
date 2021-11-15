@@ -12,7 +12,7 @@ import (
 	"github.com/Min-Feng/goutils/xLog"
 )
 
-const RequestIDHeaderKey = "X-Request"
+const RequestIDHeaderKey = "X-RequestID"
 
 func RequestIDMiddleware(c *gin.Context) {
 	reqID := RequestIDFromHeader(c.Request)

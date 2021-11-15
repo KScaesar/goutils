@@ -1,7 +1,6 @@
 package identity
 
 import (
-	"context"
 	"encoding/json"
 	"strings"
 )
@@ -54,12 +53,6 @@ func (p Permission) MarshalJSON() ([]byte, error) {
 
 func (p Permission) String() string {
 	return p.action + ":" + p.data
-}
-
-func GetLoginUserFromJwtToken(ctx context.Context) LoginUser {
-	return &loginUser{
-		userID: "",
-	}
 }
 
 type LoginUser interface {

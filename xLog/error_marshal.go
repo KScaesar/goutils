@@ -11,17 +11,17 @@ func errorStackMarshaler(err error) interface{} {
 }
 
 func errorMarshalFunc(err error) interface{} {
-	return &errorLogObject{
+	return &errorObject{
 		msg:  err.Error(),
 		code: errors.Code(err),
 	}
 }
 
-type errorLogObject struct {
+type errorObject struct {
 	msg  string
 	code int
 }
 
-func (o *errorLogObject) MarshalZerologObject(e *zerolog.Event) {
-	e.Str("err_msg", o.msg).Int("err_code", o.code)
+func (obj *errorObject) MarshalZerologObject(e *zerolog.Event) {
+	e.Str("err_msg", obj.msg).Int("err_code", obj.code)
 }
