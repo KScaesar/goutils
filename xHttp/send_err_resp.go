@@ -8,18 +8,20 @@ import (
 )
 
 func SendErrorResponse(c *gin.Context, err error) {
-	SendErrorResponseBase(c, err, 1, xLog.KindApplication)
+	sendErrorResponseBase(c, err, 1)
 }
 
-func SendErrorResponseBase(c *gin.Context, err error, skip int, kind xLog.Kind) {
+func sendErrorResponseBase(c *gin.Context, err error, skip int) {
 	if err == nil {
 		return
 	}
 
 	xLog.LoggerFromContext(c.Request.Context()).
-		Kind(kind).
-		Unwrap().Err(err).Caller(skip + 1).Send()
+		Unwrap().
+		Err(err).
+		Caller(skip + 1).
+		Send()
 
-	c.JSON(errors.HTTPStatus(err), NewErrorResponse(err))
+	c.JSON(errors.HttpStatus(err), NewErrorResponse(err))
 	c.Abort()
 }

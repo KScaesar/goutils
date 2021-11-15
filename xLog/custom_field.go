@@ -1,12 +1,12 @@
 package xLog
 
-type Kind int
+type TriggerKind int
 
-//go:generate stringer -type=Kind -linecomment -output=custom_field_string.go
+//go:generate stringer -type=TriggerKind -linecomment -output=custom_field_string.go
 const (
-	KindUnknown      Kind = iota // unknown
-	KindHTTP                     // http
-	KindWebsocket                // websocket
-	KindMessageQueue             // mq
-	KindApplication              // app
+	TriggerKindUnknown       TriggerKind = iota // unknown
+	TriggerKindHttp                             // http
+	TriggerKindWebsocket                        // websocket
+	TriggerKindGrpc                             // grpc
+	TriggerKindMessageBroker                    // mq
 )

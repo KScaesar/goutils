@@ -6,23 +6,23 @@ import (
 	"github.com/google/uuid"
 )
 
-type TraceKey struct{}
+type requestKey struct{}
 
-func ContextWithTraceID(ctx context.Context, traceID string) (traceIDCtx context.Context) {
+func ContextWithRequestID(ctx context.Context, reqID string) context.Context {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	return context.WithValue(ctx, TraceKey{}, traceID)
+	return context.WithValue(ctx, requestKey{}, reqID)
 }
 
-func TraceIDFromContext(traceIDCtx context.Context) string {
-	traceID, ok := traceIDCtx.Value(TraceKey{}).(string)
+func RequestIDFromContext(ctx context.Context) string {
+	reqID, ok := ctx.Value(requestKey{}).(string)
 	if ok {
-		return traceID
+		return reqID
 	}
 	return ""
 }
 
-func NewTraceID() string {
+func NewRequestID() string {
 	return uuid.NewString()
 }

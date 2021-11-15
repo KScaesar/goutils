@@ -14,7 +14,7 @@ func TestCode(t *testing.T) {
 	barErr := WrapMessage(fooErr, "bar")
 
 	assert.Equal(t, definedCode, Code(barErr))
-	assert.Equal(t, http.StatusBadGateway, HTTPStatus(barErr))
+	assert.Equal(t, http.StatusBadGateway, HttpStatus(barErr))
 }
 
 func TestSimpleInfo(t *testing.T) {

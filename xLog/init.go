@@ -14,47 +14,26 @@ func init() {
 	zerolog.ErrorMarshalFunc = errorMarshalFunc
 	zerolog.TimestampFieldName = "timestamp"
 
-	DefaultMode()
+	Init("debug", true)
 }
 
-func DefaultMode() {
-	Init(Config{Show: "human", Level: "info"})
-}
-
-func FixBugMode() {
-	SetGlobalLevel("debug")
-}
-
-// TestingMode 避免執行 go test, 出現 log 訊息
-func TestingMode() {
-	SetGlobalLevel("panic")
-}
-
-type Config struct {
-	Show  string // "json", "human"
-	Level string // "debug", "info", "error", "panic"
-}
-
-func Init(cfg Config) {
-	err := SetGlobalLevel(cfg.Level)
+// Init
+// @param level: "debug", "info", "error", "panic"
+func Init(level string, isDevEnv bool) {
+	err := SetGlobalLevel(level)
 	if err != nil {
 		panic(err)
 	}
 
-	switch cfg.Show {
-	case "json":
-		zerolog.TimeFieldFormat = zerolog.TimeFormatUnixMs
-		default_ = New(os.Stdout)
-
-	case "human":
+	var w io.Writer
+	if isDevEnv {
 		zerolog.TimeFieldFormat = CustomTimeFormat
-		default_ = New(NewConsoleWriter(os.Stdout))
-
-	default:
-		// 這裡簡化了參數, show 包含了 json 格式 及 io.Writer
-		// 為了讓之後 io.Writer, 可以替換
-		// 所以略過 default 設定
+		w = NewConsoleWriter(os.Stdout)
+	} else {
+		zerolog.TimeFieldFormat = zerolog.TimeFormatUnixMs
+		w = os.Stdout
 	}
+	SetDefaultLogger(NewLogger(w))
 }
 
 func NewConsoleWriter(w io.Writer) io.Writer {

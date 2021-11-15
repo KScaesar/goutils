@@ -2,7 +2,7 @@ package xLog
 
 import "time"
 
-type HttpMetricNormal struct {
+type HttpMetricInfo struct {
 	Method   string
 	URL      string
 	ClientIP string
@@ -16,25 +16,26 @@ type HttpMetricDebug struct {
 	RespBody string
 }
 
-func (l WrapperLogger) RecordHttpInfo(normal *HttpMetricNormal, debug *HttpMetricDebug) WrapperLogger {
-	log := l
+func (l WrapperLogger) RecordHttpForDebug(info *HttpMetricInfo, debug *HttpMetricDebug) WrapperLogger {
+	return l.
+		TriggerKind(TriggerKindHttp).
+		HttpMethod(info.Method).
+		URL(info.URL).
+		ClientIP(info.ClientIP).
+		Referrer(info.Referrer).
+		HttpStatus(info.Status).
+		CostTime(info.TimeCost).
+		ReqBody(debug.ReqBody).
+		RespBody(debug.RespBody)
+}
 
-	if normal != nil {
-		log = log.
-			Kind(KindHTTP).
-			HTTPMethod(normal.Method).
-			URL(normal.URL).
-			ClientIP(normal.ClientIP).
-			Referrer(normal.Referrer).
-			HTTPStatus(normal.Status).
-			CostTime(normal.TimeCost)
-	}
-
-	if debug != nil {
-		log = log.
-			ReqBody(debug.ReqBody).
-			RespBody(debug.RespBody)
-	}
-
-	return log
+func (l WrapperLogger) RecordHttp(info *HttpMetricInfo) WrapperLogger {
+	return l.
+		TriggerKind(TriggerKindHttp).
+		HttpMethod(info.Method).
+		URL(info.URL).
+		ClientIP(info.ClientIP).
+		Referrer(info.Referrer).
+		HttpStatus(info.Status).
+		CostTime(info.TimeCost)
 }

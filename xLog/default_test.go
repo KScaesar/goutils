@@ -13,31 +13,30 @@ import (
 	"github.com/Min-Feng/goutils/xTest"
 )
 
-//go:generate go test -trimpath -run=TestError -v github.com/Min-Feng/goutils/logY
+//go:generate go test -trimpath -run=TestError -v github.com/Min-Feng/goutils/xLog
 func TestError(t *testing.T) {
 	writer := &bytes.Buffer{}
-	default_ = New(writer)
-	defer DefaultMode()
+	Init("error", false)
+	SetDefaultLogger(NewLogger(writer))
 
-	zerolog.TimeFieldFormat = CustomTimeFormat // DefaultMode() show=human, 影響 zerolog.TimeFieldFormat
 	zerolog.TimestampFunc = xTest.FakeTimeNow("2021-12-14")
 
 	expected := `
 {
   "level": "error",
-  "caller": "github.com/Min-Feng/goutils/logY/default_test.go:44",
-  "timestamp": "2021-12-14 00:00:00+08:00",
-  "error": {
-    "msg": "unit test: json failed",
-    "code": 8787
-  },
   "stack": [
     [
-      "github.com/Min-Feng/goutils/logY.TestError github.com/Min-Feng/goutils/logY/default_test.go:44 ",
+      "github.com/Min-Feng/goutils/xLog.TestError github.com/Min-Feng/goutils/xLog/default_test.go:43 ",
       "testing.tRunner testing/testing.go:1193 ",
       "runtime.goexit runtime/asm_amd64.s:1371 "
     ]
-  ]
+  ],
+  "error": {
+    "err_msg": "unit test: json failed",
+    "err_code": 8787
+  },
+  "caller": "github.com/Min-Feng/goutils/xLog/default_test.go:42",
+  "timestamp": 1639440000000
 }`
 
 	err := errors.New(8787, http.StatusInternalServerError, "json failed")

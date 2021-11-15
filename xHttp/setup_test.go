@@ -8,7 +8,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	xLog.TestingMode()
+	xLog.SetGlobalLevel("panic")
 
 	code := m.Run()
 	os.Exit(code)

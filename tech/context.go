@@ -6,12 +6,12 @@ import (
 	"github.com/Min-Feng/goutils/xLog"
 )
 
-func SetTraceID(ctx context.Context, traceID string) context.Context {
-	return xLog.ContextWithTraceID(ctx, traceID)
+func SetRequestID(ctx context.Context, traceID string) context.Context {
+	return xLog.ContextWithRequestID(ctx, traceID)
 }
 
-func TraceID(ctx context.Context) string {
-	return xLog.TraceIDFromContext(ctx)
+func RequestID(ctx context.Context) string {
+	return xLog.RequestIDFromContext(ctx)
 }
 
 func SetLogger(ctx context.Context, l xLog.WrapperLogger) context.Context {

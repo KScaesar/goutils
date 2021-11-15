@@ -12,26 +12,26 @@ import (
 	"github.com/Min-Feng/goutils/xLog"
 )
 
-const TraceIDHeaderKey = "X-Trace"
+const RequestIDHeaderKey = "X-Request"
 
-func TraceIDFromHeader(r *http.Request, w http.ResponseWriter) (traceID string) {
-	traceID = r.Header.Get(TraceIDHeaderKey)
-	if traceID == "" {
-		traceID = xLog.NewTraceID()
-	}
-	w.Header().Add(TraceIDHeaderKey, traceID)
-	return
+func RequestIDMiddleware(c *gin.Context) {
+	reqID := RequestIDFromHeader(c.Request)
+	c.Writer.Header().Add(RequestIDHeaderKey, reqID)
+
+	ctx := xLog.ContextWithRequestID(c.Request.Context(), reqID)
+	logger := xLog.Logger().RequestID(reqID)
+	logCtx := xLog.ContextWithLogger(ctx, logger)
+	c.Request = c.Request.WithContext(logCtx)
+
+	c.Next()
 }
 
-func TraceIDMiddleware(c *gin.Context) {
-	traceID := TraceIDFromHeader(c.Request, c.Writer)
-	traceIDCtx := xLog.ContextWithTraceID(c.Request.Context(), traceID)
-
-	log := xLog.Logger().TraceID(traceID)
-	logCtx := xLog.ContextWithLogger(traceIDCtx, log)
-
-	c.Request = c.Request.WithContext(logCtx)
-	c.Next()
+func RequestIDFromHeader(r *http.Request) (reqID string) {
+	reqID = r.Header.Get(RequestIDHeaderKey)
+	if reqID == "" {
+		reqID = xLog.NewRequestID()
+	}
+	return
 }
 
 type respMultiWriter struct {
@@ -44,13 +44,13 @@ func (w *respMultiWriter) Write(b []byte) (int, error) {
 	return w.ResponseWriter.Write(b)
 }
 
-func RecordHTTPInfoMiddleware() gin.HandlerFunc {
-	// keywords 若放在匿名函數 ContainKeyword 裡面, 會造成重複 allocate memory, 利用閉包鎖住變數位址
+func RecordHttpInfoMiddleware() gin.HandlerFunc {
+	// keywords 若放在匿名函數 containKeyword 裡面, 會造成重複 allocate memory, 利用閉包鎖住變數位址
 	keywords := [][]byte{
 		[]byte("password"),
 	}
 
-	ContainKeyword := func(reqBody []byte) bool {
+	containKeyword := func(reqBody []byte) bool {
 		for _, keyword := range keywords {
 			if bytes.Contains(reqBody, keyword) {
 				return true
@@ -74,9 +74,9 @@ func RecordHTTPInfoMiddleware() gin.HandlerFunc {
 
 		c.Next()
 
-		log := xLog.LoggerFromContext(c.Request.Context())
+		logger := xLog.LoggerFromContext(c.Request.Context())
 
-		m1 := &xLog.HttpMetricNormal{
+		info := &xLog.HttpMetricInfo{
 			Method:   c.Request.Method,
 			URL:      c.Request.URL.Redacted(),
 			ClientIP: c.ClientIP(),
@@ -85,21 +85,19 @@ func RecordHTTPInfoMiddleware() gin.HandlerFunc {
 			TimeCost: time.Now().Sub(start),
 		}
 
-		if xLog.IsDebugLevel() && !ContainKeyword(reqBody.Bytes()) {
-			m2 := &xLog.HttpMetricDebug{
+		if xLog.IsDebugLevel() && !containKeyword(reqBody.Bytes()) {
+			debug := &xLog.HttpMetricDebug{
 				ReqBody:  reqBody.String(),
 				RespBody: respWriter.body.String(),
 			}
-			log.RecordHttpInfo(m1, m2).Unwrap().Debug().Send()
+			logger.RecordHttpForDebug(info, debug).Unwrap().Debug().Send()
 		}
 
-		status := c.Writer.Status()
-		if status >= http.StatusBadRequest {
-			log.RecordHttpInfo(m1, nil).Unwrap().Error().Send()
+		if c.Writer.Status() >= http.StatusBadRequest {
+			logger.RecordHttp(info).Unwrap().Error().Send()
 			return
 		}
 
-		log.RecordHttpInfo(m1, nil).Unwrap().Info().Send()
+		logger.RecordHttp(info).Unwrap().Info().Send()
 	}
-
 }

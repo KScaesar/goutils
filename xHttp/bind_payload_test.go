@@ -13,19 +13,19 @@ import (
 )
 
 func TestBindPayload_Failed(t *testing.T) {
-	// logY.FixBugMode()
+	// xLog.SetGlobalLevel("debug")
 
 	gin.SetMode("release")
 	router := gin.New()
-	router.POST("/hello", TraceIDMiddleware, RecordHTTPInfoMiddleware(), bindFailedHandler)
+	router.POST("/hello", RequestIDMiddleware, RecordHttpInfoMiddleware(), bindFailedHandler)
 
 	body := bytes.NewBuffer([]byte(`{"name":"caesar"}`))
 	resp, status := xTest.HttpClientDoJson(router, http.MethodPost, "/hello", body)
 
 	expectedResp := `
 {
-  "code": 1002,
-  "msg": "bind payload: Key: 'Person.Age' Error:Field validation for 'Age' failed on the 'required' tag: invalid params",
+  "code": 1003,
+  "msg": "bind payload: Key: 'Person.Age' Error:Field validation for 'Age' failed on the 'required' tag: invalid parameter",
   "data": {}
 }`
 	assert.JSONEq(t, expectedResp, resp)

@@ -23,5 +23,5 @@ type errorLogObject struct {
 }
 
 func (o *errorLogObject) MarshalZerologObject(e *zerolog.Event) {
-	e.Str("msg", o.msg).Int("code", o.code)
+	e.Str("err_msg", o.msg).Int("err_code", o.code)
 }

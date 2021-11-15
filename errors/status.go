@@ -21,7 +21,7 @@ func Code(err error) int {
 	return base.code
 }
 
-func HTTPStatus(err error) int {
+func HttpStatus(err error) int {
 	if err == nil {
 		return http.StatusOK
 	}

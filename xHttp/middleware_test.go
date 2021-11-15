@@ -13,11 +13,11 @@ import (
 )
 
 func TestMiddleware_Success(t *testing.T) {
-	// logY.FixBugMode()
+	// xLog.SetGlobalLevel("info")
 
 	gin.SetMode("release")
 	router := gin.New()
-	router.POST("/hello", TraceIDMiddleware, RecordHTTPInfoMiddleware(), helloHandlerSuccess)
+	router.POST("/hello", RequestIDMiddleware, RecordHttpInfoMiddleware(), helloHandlerSuccess)
 
 	body := bytes.NewBufferString(`{"name":"caesar"}`)
 	resp, status := xTest.HttpClientDoJson(router, http.MethodPost, "/hello", body)
