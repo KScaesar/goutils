@@ -6,7 +6,7 @@ import (
 )
 
 type AuthServiceFactory interface {
-	CreateAuthService(LoginUser) (AuthService, error)
+	CreateAuthService(Visitor) (AuthService, error)
 }
 
 type AuthService interface {
@@ -55,31 +55,31 @@ func (p Permission) String() string {
 	return p.action + ":" + p.data
 }
 
-type LoginUser interface {
+type Visitor interface {
 	UserID() string
 }
 
-type loginUser struct {
+type visitor struct {
 	userID string
 }
 
-func (user *loginUser) UserID() string {
+func (user *visitor) UserID() string {
 	return user.userID
 }
 
-func verifyLoginUserDataOwnership(user LoginUser, fns ...IsMatchDataOwnership) bool {
+func verifyDataOwnership(visitor Visitor, fns ...IsMatchDataOwnership) bool {
 	for _, isMatch := range fns {
-		if !isMatch(user) {
+		if !isMatch(visitor) {
 			return false
 		}
 	}
 	return true
 }
 
-type IsMatchDataOwnership func(LoginUser) bool
+type IsMatchDataOwnership func(Visitor) bool
 
 func DataOwnershipBelongUser(userID string) IsMatchDataOwnership {
-	return func(user LoginUser) bool {
+	return func(user Visitor) bool {
 		return user.UserID() == userID
 	}
 }
