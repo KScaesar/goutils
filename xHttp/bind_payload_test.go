@@ -9,11 +9,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/Min-Feng/goutils/xLog"
 	"github.com/Min-Feng/goutils/xTest"
 )
 
 func TestBindPayload_Failed(t *testing.T) {
-	// xLog.SetGlobalLevel("debug")
+	xLog.SetGlobalLevel("debug")
 
 	gin.SetMode("release")
 	router := gin.New()

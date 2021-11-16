@@ -2,6 +2,7 @@ package xLog
 
 import (
 	"io"
+	"io/ioutil"
 	"os"
 
 	"github.com/rs/zerolog"
@@ -19,14 +20,14 @@ func init() {
 
 // Init
 // @param level: "debug", "info", "error", "panic"
-func Init(level string, isDevEnv bool) {
+func Init(level string, outputHumanly bool) {
 	err := SetGlobalLevel(level)
 	if err != nil {
 		panic(err)
 	}
 
 	var w io.Writer
-	if isDevEnv {
+	if outputHumanly {
 		zerolog.TimeFieldFormat = CustomTimeFormat
 		w = NewConsoleWriter(os.Stdout)
 	} else {
@@ -47,4 +48,8 @@ func NewConsoleWriter(w io.Writer) io.Writer {
 			return i.(string)
 		},
 	}
+}
+
+func NewNoWriter() io.Writer {
+	return ioutil.Discard
 }

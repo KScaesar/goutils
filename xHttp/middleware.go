@@ -18,10 +18,13 @@ func RequestIDMiddleware(c *gin.Context) {
 	reqID := RequestIDFromHeader(c.Request)
 	c.Writer.Header().Add(RequestIDHeaderKey, reqID)
 
-	ctx := xLog.ContextWithRequestID(c.Request.Context(), reqID)
-	logger := xLog.Logger().RequestID(reqID)
-	logCtx := xLog.ContextWithLogger(ctx, logger)
-	c.Request = c.Request.WithContext(logCtx)
+	logger := xLog.Logger().
+		RequestID(reqID)
+
+	ctx := c.Request.Context()
+	ctx1 := xLog.ContextWithRequestID(ctx, reqID)
+	ctx2 := xLog.ContextWithLogger(ctx1, logger)
+	c.Request = c.Request.WithContext(ctx2)
 
 	c.Next()
 }
@@ -74,7 +77,7 @@ func RecordHttpInfoMiddleware() gin.HandlerFunc {
 
 		c.Next()
 
-		logger := xLog.LoggerFromContext(c.Request.Context())
+		logger := xLog.LoggerFromContext(c.Request.Context()).TriggerKind(xLog.TriggerKindHttp)
 
 		info := &xLog.HttpMetricInfo{
 			Method:   c.Request.Method,
@@ -84,13 +87,14 @@ func RecordHttpInfoMiddleware() gin.HandlerFunc {
 			Status:   c.Writer.Status(),
 			TimeCost: time.Now().Sub(start),
 		}
+		logger = logger.RecordHttp(info)
 
 		if xLog.IsDebugLevel() && !containKeyword(reqBody.Bytes()) {
 			debug := &xLog.HttpMetricDebug{
 				ReqBody:  reqBody.String(),
 				RespBody: respWriter.body.String(),
 			}
-			logger.RecordHttpForDebug(info, debug).Unwrap().Debug().Send()
+			logger = logger.RecordHttpForDebug(debug)
 		}
 
 		if c.Writer.Status() >= http.StatusBadRequest {

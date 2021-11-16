@@ -12,10 +12,11 @@ import (
 )
 
 func TestSendErrorResponse(t *testing.T) {
+	// xLog.SetGlobalLevel("debug")
 
 	gin.SetMode("release")
 	router := gin.New()
-	router.POST("/hello", RequestIDMiddleware, helloHandlerUseCaseFailed)
+	router.POST("/hello", RequestIDMiddleware, RecordHttpInfoMiddleware(), helloHandlerUseCaseFailed)
 	resp, status := xTest.HttpClientDoJson(router, http.MethodPost, "/hello", nil)
 
 	expectedResp := `
