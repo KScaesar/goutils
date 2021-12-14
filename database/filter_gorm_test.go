@@ -6,6 +6,7 @@ import (
 	"github.com/fatih/structs"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/Min-Feng/goutils"
 	"github.com/Min-Feng/goutils/database"
 	"github.com/Min-Feng/goutils/xTest"
 )
@@ -20,12 +21,12 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		param       interface{}
+		filter      interface{}
 		expectedSql string
 	}{
 		{
 			name: "struct is embed",
-			param: struct {
+			filter: struct {
 				Embed
 				IsAdmin *bool `rdb:"is_admin = ?"`
 			}{
@@ -38,7 +39,7 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 		},
 		{
 			name: "search null",
-			param: struct {
+			filter: struct {
 				OccurredAt string `rdb:"occurred_at is ?"`
 			}{
 				OccurredAt: "null",
@@ -47,7 +48,7 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 		},
 		{
 			name: "string have a value",
-			param: struct {
+			filter: struct {
 				Name string `rdb:"name = ?"`
 			}{
 				Name: "haha",
@@ -56,7 +57,7 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 		},
 		{
 			name: "string is empty",
-			param: struct {
+			filter: struct {
 				Name string `rdb:"name = ?"`
 			}{
 				Name: "",
@@ -65,7 +66,7 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 		},
 		{
 			name: "bool is pointer and nil",
-			param: struct {
+			filter: struct {
 				IsAdmin *bool `rdb:"is_admin = ?"`
 			}{
 				IsAdmin: nil,
@@ -74,7 +75,7 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 		},
 		{
 			name: "bool is pointer and false",
-			param: struct {
+			filter: struct {
 				IsAdmin *bool `rdb:"is_admin = ?"`
 			}{
 				IsAdmin: &boolFalse,
@@ -83,7 +84,7 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 		},
 		{
 			name: "bool is false",
-			param: struct {
+			filter: struct {
 				IsAdmin bool `rdb:"is_admin = ?"`
 			}{
 				IsAdmin: false,
@@ -92,7 +93,7 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 		},
 		{
 			name: "int is pointer and nil",
-			param: struct {
+			filter: struct {
 				Age *int `rdb:"age = ?"`
 			}{
 				Age: nil,
@@ -101,7 +102,7 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 		},
 		{
 			name: "search int == 0, need to int type is pointer",
-			param: struct {
+			filter: struct {
 				Age *int `rdb:"age = ?"`
 			}{
 				Age: &IntZero,
@@ -110,7 +111,7 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 		},
 		{
 			name: "int is zero",
-			param: struct {
+			filter: struct {
 				Age int `rdb:"age = ?"`
 			}{
 				Age: 0,
@@ -119,7 +120,7 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 		},
 		{
 			name: "id slice not nil",
-			param: struct {
+			filter: struct {
 				IDSet []int `rdb:"id In (?)"`
 			}{
 				IDSet: []int{2, 4, 5},
@@ -128,7 +129,7 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 		},
 		{
 			name: "id slice is nil",
-			param: struct {
+			filter: struct {
 				IDSet []int `rdb:"id In (?)"`
 			}{
 				IDSet: nil,
@@ -136,13 +137,13 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 			expectedSql: "SELECT * FROM `book`",
 		},
 		{
-			name:        "param struct is nil",
-			param:       nil,
+			name:        "filter struct is nil",
+			filter:      nil,
 			expectedSql: "SELECT * FROM `book`",
 		},
 		{
-			name: "where param",
-			param: database.WhereParam{
+			name: "FilterOption type",
+			filter: goutils.FilterOption{
 				{"user_id = ?", 123},
 				{"datetime in (?)", []string{"2020-10-17", "2021-09-16"}},
 			},
@@ -157,7 +158,7 @@ func TestTransformQueryParamToGorm(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			where := database.TransformWhereParamToGorm(tt.param)
+			where := database.GormFilter(tt.filter)
 
 			var data []map[string]interface{}
 			stmt := db.Table("book").Scopes(where...).Find(&data).Statement
