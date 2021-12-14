@@ -7,22 +7,21 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestPageResponse_json_Marshal(t *testing.T) {
+func TestNewPageResponse_json_Marshal(t *testing.T) {
 	opt := PageOption{
 		PageNumber: 4,
 		PageSize:   9,
 	}
-	totalCount := 34
 
 	expected := `{"totalPage":4,"totalCount":34,"targetPageNumber":4,"targetPageSize":7}`
-	body, _ := json.Marshal(NewPageResponse(opt, totalCount))
+	body, _ := json.Marshal(NewPageResponse(opt, 34))
 	assert.Equal(t, expected, string(body))
 }
 
 func TestNewPageResponse(t *testing.T) {
 	type args struct {
 		opt        PageOption
-		totalCount int
+		totalCount int64
 	}
 	tests := []struct {
 		name   string
@@ -94,13 +93,26 @@ func TestNewPageResponse(t *testing.T) {
 				TargetPageSize:   40,
 			},
 		},
+		{
+			name: "6",
+			args: args{
+				opt:        NewPageOption(1, 40),
+				totalCount: 0,
+			},
+			expect: PageResponse{
+				TotalPageNumber:  1,
+				TotalCount:       0,
+				TargetPageNumber: 1,
+				TargetPageSize:   0,
+			},
+		},
 	}
 
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			actual := NewPageResponse(tt.args.opt, tt.args.totalCount)
-			assert.Equal(t, tt.expect, actual)
+			assert.Equal(t, tt.expect, *actual)
 		})
 	}
 }

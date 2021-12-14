@@ -1,59 +1,54 @@
 package goutils
 
-func NewPageOption(pageNumber int, pageSize int) PageOption {
+func NewPageOption(pageNumber int64, pageSize int64) PageOption {
 	option := PageOption{PageNumber: pageNumber, PageSize: pageSize}
 	return option.Init()
 }
 
 type PageOption struct {
-	PageNumber int `json:"page_number" form:"pNumber"`
-	PageSize   int `json:"page_size" form:"pSize"`
+	PageNumber int64 `json:"pNumber" form:"pNumber"`
+	PageSize   int64 `json:"pSize" form:"pSize"`
 }
 
 func (p PageOption) Init() PageOption {
 	const (
 		defaultPageNumber = 1
 		defaultPageSize   = 10
+
+		maxPageSize = 2e3
 	)
 
+	pNumber := p.PageNumber
+	pSize := p.PageSize
+
 	switch {
-	case p.PageNumber > 0 && p.PageSize > 0:
-		return PageOption{
-			PageNumber: p.PageNumber,
-			PageSize:   p.PageSize,
-		}
+	case p.PageNumber <= 0:
+		pNumber = defaultPageNumber
 
-	case p.PageNumber <= 0 && p.PageSize > 0:
-		return PageOption{
-			PageNumber: defaultPageNumber,
-			PageSize:   p.PageSize,
-		}
+	case p.PageSize <= 0:
+		pSize = defaultPageSize
 
-	case p.PageNumber > 0 && p.PageSize <= 0:
-		return PageOption{
-			PageNumber: p.PageNumber,
-			PageSize:   defaultPageSize,
-		}
+	case p.PageSize > maxPageSize:
+		pSize = maxPageSize
+	}
 
-	default:
-		return PageOption{
-			PageNumber: defaultPageNumber,
-			PageSize:   defaultPageSize,
-		}
+	return PageOption{
+		PageNumber: pNumber,
+		PageSize:   pSize,
 	}
 }
 
 func (p PageOption) OffsetOrSkip() int64 {
-	return int64(p.PageNumber-1) * int64(p.PageSize)
+	return (p.PageNumber - 1) * p.PageSize
 }
 
-func NewPageResponse(opt PageOption, totalCount int) PageResponse {
+func NewPageResponse(opt PageOption, totalCount int64) *PageResponse {
 	opt = opt.Init()
 
 	quotient := totalCount / opt.PageSize
 	remainder := totalCount % opt.PageSize
 
-	var totalPageNumber int
+	var totalPageNumber int64
 	switch {
 	case quotient > 0 && remainder == 0:
 		totalPageNumber = quotient
@@ -65,22 +60,25 @@ func NewPageResponse(opt PageOption, totalCount int) PageResponse {
 		totalPageNumber = 1
 	}
 
-	var targetPageSize int
+	var targetPageSize int64
 	switch {
 	case totalPageNumber > opt.PageNumber:
 		targetPageSize = opt.PageSize
 
-	case totalPageNumber == opt.PageNumber && remainder == 0:
+	case totalPageNumber == opt.PageNumber && totalCount != 0 && remainder == 0:
 		targetPageSize = opt.PageSize
 
-	case totalPageNumber == opt.PageNumber && remainder != 0:
+	case totalPageNumber == opt.PageNumber && totalCount != 0 && remainder != 0:
 		targetPageSize = remainder
+
+	case totalPageNumber == opt.PageNumber && totalCount == 0:
+		targetPageSize = 0
 
 	case totalPageNumber < opt.PageNumber:
 		targetPageSize = 0
 	}
 
-	return PageResponse{
+	return &PageResponse{
 		TotalPageNumber: totalPageNumber,
 		TotalCount:      totalCount,
 
@@ -90,9 +88,9 @@ func NewPageResponse(opt PageOption, totalCount int) PageResponse {
 }
 
 type PageResponse struct {
-	TotalPageNumber int `json:"totalPage"`
-	TotalCount      int `json:"totalCount"`
+	TotalPageNumber int64 `json:"totalPage"`
+	TotalCount      int64 `json:"totalCount"`
 
-	TargetPageNumber int `json:"targetPageNumber"`
-	TargetPageSize   int `json:"targetPageSize"`
+	TargetPageNumber int64 `json:"targetPageNumber"`
+	TargetPageSize   int64 `json:"targetPageSize"`
 }
