@@ -3,6 +3,9 @@ package goutils
 import (
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/bsontype"
+
 	"github.com/Min-Feng/goutils/errors"
 )
 
@@ -25,4 +28,20 @@ func TimeParse(timeLayout string) (t time.Time, err error) {
 		}
 	}
 	return time.Time{}, errors.Wrap(errors.ErrSystem, err.Error())
+}
+
+const TimeFormat = "2006-01-02 15:04:05 -07:00"
+
+type TimeViewModel struct {
+	Standard time.Time
+}
+
+func (t *TimeViewModel) UnmarshalBSONValue(b bsontype.Type, bytes []byte) error {
+	rv := bson.RawValue{Type: b, Value: bytes}
+	t.Standard = rv.Time()
+	return nil
+}
+
+func (t TimeViewModel) MarshalText() (text []byte, err error) {
+	return []byte(t.Standard.Format(TimeFormat)), nil
 }
