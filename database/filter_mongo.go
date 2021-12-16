@@ -1,6 +1,8 @@
 package database
 
 import (
+	"reflect"
+
 	"github.com/fatih/structs"
 	"go.mongodb.org/mongo-driver/bson"
 
@@ -42,8 +44,19 @@ func MongoFilter(filter interface{}) bson.D {
 				continue
 			}
 
+			rv := reflect.ValueOf(value)
+			key := field.Tag("bson")
+
+			if rv.Kind() == reflect.Slice {
+				where = append(where, bson.E{
+					Key:   key,
+					Value: bson.M{"$in": value},
+				})
+				continue
+			}
+
 			where = append(where, bson.E{
-				Key:   field.Tag("bson"),
+				Key:   key,
 				Value: value,
 			})
 		}
