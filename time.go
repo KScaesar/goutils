@@ -32,16 +32,23 @@ func TimeParse(timeLayout string) (t time.Time, err error) {
 
 const TimeFormat = "2006-01-02 15:04:05 -07:00"
 
-type TimeViewModel struct {
-	Standard time.Time
-}
+type TimeViewModel time.Time
 
 func (t *TimeViewModel) UnmarshalBSONValue(b bsontype.Type, bytes []byte) error {
 	rv := bson.RawValue{Type: b, Value: bytes}
-	t.Standard = rv.Time()
+	*t = TimeViewModel(rv.Time())
 	return nil
 }
 
+func (t TimeViewModel) String() string {
+	return t.ProtoType().String()
+}
+
 func (t TimeViewModel) MarshalText() (text []byte, err error) {
-	return []byte(t.Standard.Format(TimeFormat)), nil
+	const defaultFormant = "2006-01-02 15:04:05 -07:00"
+	return []byte(t.ProtoType().Format(defaultFormant)), nil
+}
+
+func (t TimeViewModel) ProtoType() time.Time {
+	return time.Time(t)
 }
