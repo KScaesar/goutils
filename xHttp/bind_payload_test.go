@@ -14,7 +14,7 @@ import (
 )
 
 func TestBindPayload_Failed(t *testing.T) {
-	xLog.SetGlobalLevel("debug")
+	// xLog.SetGlobalLevel("panic")
 
 	gin.SetMode("release")
 	router := gin.New()
@@ -26,7 +26,7 @@ func TestBindPayload_Failed(t *testing.T) {
 	expectedResp := `
 {
   "code": 1003,
-  "msg": "bind payload: Key: 'Person.Age' Error:Field validation for 'Age' failed on the 'required' tag: invalid parameter",
+  "msg": "bind payload: Key: 'Person.Age' Error:Field validation for 'Age' failed on the 'required' tag",
   "data": {}
 }`
 	assert.JSONEq(t, expectedResp, resp)
@@ -34,6 +34,8 @@ func TestBindPayload_Failed(t *testing.T) {
 }
 
 func bindFailedHandler(c *gin.Context) {
+	xLog.SetGlobalLevel("panic")
+
 	type Person struct {
 		Name string `json:"name"`
 		Age  int    `json:"age" binding:"required"`

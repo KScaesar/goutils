@@ -8,11 +8,12 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Min-Feng/goutils/errors"
+	"github.com/Min-Feng/goutils/xLog"
 	"github.com/Min-Feng/goutils/xTest"
 )
 
 func TestSendErrorResponse(t *testing.T) {
-	// xLog.SetGlobalLevel("debug")
+	xLog.SetGlobalLevel("panic")
 
 	gin.SetMode("release")
 	router := gin.New()
@@ -22,7 +23,7 @@ func TestSendErrorResponse(t *testing.T) {
 	expectedResp := `
 {
   "code": 1001,
-  "msg": "sql statement invalid: system failed",
+  "msg": "sql statement invalid",
   "data": {}
 }`
 	assert.JSONEq(t, expectedResp, resp)

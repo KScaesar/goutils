@@ -14,7 +14,7 @@ import (
 )
 
 func TestMiddleware_Success(t *testing.T) {
-	xLog.SetGlobalLevel("debug")
+	xLog.SetGlobalLevel("panic")
 
 	gin.SetMode("release")
 	router := gin.New()

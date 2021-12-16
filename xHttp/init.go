@@ -7,10 +7,10 @@ import (
 )
 
 func init() {
-	errors.RegisterFrameFilter(ginNextFilter())
+	errors.RegisterFrameFilter(errorFilterGinNext())
 }
 
-func ginNextFilter() errors.FrameFilter {
+func errorFilterGinNext() errors.FrameFilter {
 	target := []byte("gin.(*Context).Next")
 	return func(frame []byte) bool {
 		return bytes.Contains(frame, target)

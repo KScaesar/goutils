@@ -31,7 +31,7 @@ func TestError(t *testing.T) {
       "runtime.goexit runtime/asm_amd64.s:1371 "
     ]
   ],
-  "error": {
+  "my_error": {
     "err_msg": "unit test: json failed",
     "err_code": 8787
   },
@@ -43,7 +43,7 @@ func TestError(t *testing.T) {
 	Err(errors.Wrap(err, "unit test")).Send()
 	actual := writer.String()
 
-	errPath := "error"
+	errPath := "my_error"
 	assert.JSONEq(t, gjson.Get(expected, errPath).Raw, gjson.Get(actual, errPath).Raw)
 	stackPath := "stack.0.0"
 	assert.Equal(t, gjson.Get(expected, stackPath).Raw, gjson.Get(actual, stackPath).Raw)
