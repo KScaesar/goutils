@@ -2,6 +2,7 @@ package errors
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/pkg/errors"
 )
@@ -46,7 +47,8 @@ func SimpleInfo(err error) string {
 	for current != nil {
 		causeErrFactory, ok := current.(pkgErrCause)
 		if !ok { // 沒找到就表示, current is root error
-			return msgErr.Error()
+			msgList := strings.Split(msgErr.Error(), ": "+current.Error())
+			return msgList[0]
 		}
 
 		before = current
