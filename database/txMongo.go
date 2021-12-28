@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readconcern"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
+	"go.mongodb.org/mongo-driver/x/mongo/driver"
 
 	"github.com/Min-Feng/goutils/errors"
 )
@@ -138,6 +139,7 @@ func (adapter *mongoTxAdapter) ManualComplete(fn func(txCtx context.Context) err
 	}
 
 	sessCtx := mongo.NewSessionContext(ctx, adapter.sess)
+
 	return adapter.commit, adapter.rollback, fn(sessCtx)
 }
 
@@ -170,4 +172,24 @@ func (adapter *mongoTxAdapter) rollback() error {
 func (adapter *mongoTxAdapter) ExistMongoSessionInsideContext(ctx context.Context) bool {
 	_, ok := ctx.(mongo.SessionContext)
 	return ok
+}
+
+func TranslateMongoError(err error) error {
+	if err == nil {
+		return nil
+	}
+
+	var cmdErr *mongo.CommandError
+
+	switch {
+	// https://docs.mongodb.com/v4.4/core/transactions-in-applications/#std-label-txn-callback-api
+	case errors.As(err, &cmdErr) && cmdErr.HasErrorLabel(driver.TransientTransactionError):
+		return err
+
+	case errors.Is(err, mongo.ErrNoDocuments):
+		return errors.Wrap(errors.ErrNotFound, err.Error())
+
+	default:
+		return errors.Wrap(errors.ErrSystem, err.Error())
+	}
 }

@@ -20,4 +20,9 @@ var (
 		http.StatusBadRequest,
 		"invalid parameter",
 	)
+	ErrNotFound = New(
+		10004,
+		http.StatusNotFound,
+		"not found",
+	)
 )
