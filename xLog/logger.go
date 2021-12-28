@@ -83,3 +83,8 @@ func (l WrapperLogger) RequestID(requestID string) WrapperLogger {
 	l.prototype = l.prototype.With().Str("request_id", requestID).Logger()
 	return l
 }
+
+func (l WrapperLogger) CollectThirdPartyErrStack(pkgName string, err error) {
+	logger := l.prototype.With().Str("3rd_party", pkgName).Logger()
+	logger.Debug().Err(err).Caller(1).Send()
+}

@@ -8,11 +8,13 @@ import (
 	"github.com/rs/zerolog"
 )
 
-const CustomTimeFormat = "2006-01-02 15:04:05-07:00"
+const CustomTimeFormat = "2006-01-02 15:04:05 -07:00"
 
 func init() {
+	zerolog.ErrorFieldName = "my_error"
 	zerolog.ErrorStackMarshaler = errorStackMarshaler
 	zerolog.ErrorMarshalFunc = errorMarshalFunc
+
 	zerolog.TimestampFieldName = "timestamp"
 
 	Init("debug", true)

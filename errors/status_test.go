@@ -24,6 +24,6 @@ func TestSimpleInfo(t *testing.T) {
 	fooErr := Wrap(repoErr, "foo failed")
 
 	actualMsg := SimpleInfo(fooErr)
-	expectedMsg := "repo save failed: not match ip"
+	expectedMsg := "repo save failed"
 	assert.Equal(t, expectedMsg, actualMsg)
 }

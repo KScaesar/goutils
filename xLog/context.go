@@ -17,7 +17,8 @@ func ContextWithLogger(ctx context.Context, l WrapperLogger) (logCtx context.Con
 func LoggerFromContext(logCtx context.Context) WrapperLogger {
 	logger, ok := logCtx.Value(logKey{}).(*WrapperLogger)
 	if !ok {
-		panic("lack logger")
+		l := Logger().Unwrap().With().Str("LoggerFromContext", "not exist").Logger()
+		return WrapPrototype(&l)
 	}
 	return *logger
 }

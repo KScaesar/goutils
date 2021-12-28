@@ -11,7 +11,7 @@ import (
 	"github.com/Min-Feng/goutils/xTest"
 )
 
-func TestTransformQueryParamToGorm(t *testing.T) {
+func TestGormFilter(t *testing.T) {
 	boolFalse := false
 	IntZero := 0
 
