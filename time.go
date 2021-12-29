@@ -2,7 +2,6 @@ package goutils
 
 import (
 	"bytes"
-	"fmt"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -13,11 +12,11 @@ import (
 
 var timeSpec = []string{
 	MyTimeFormat,
-	time.RFC3339,
 	"2006-01-02 15:04:05",
-	"2006-01-02",
 	"2006-01-02 15:04",
-	"2006-01-02 15:04:05 07:00",
+	"2006-01-02",
+	"2006-01-02 15:04:05Z07:00",
+	time.RFC3339,
 	"2006-01-02T15:04",
 	"2006-01-02T15:04:05",
 }
@@ -32,7 +31,7 @@ func TimeParse(timeLayout string) (t time.Time, err error) {
 	return time.Time{}, errors.Wrap(errors.ErrSystem, err.Error())
 }
 
-const MyTimeFormat = "2006-01-02 15:04:05 Z07:00"
+const MyTimeFormat = "2006-01-02 15:04:05 -07:00"
 
 type Time time.Time
 
@@ -59,16 +58,13 @@ func (t Time) String() string {
 }
 
 func (t *Time) UnmarshalText(text []byte) error {
-	format := string(text)
-	fmt.Println(format)
-	std, err := TimeParse(format)
+	std, err := TimeParse(string(text))
 	*t = Time(std)
 	return err
 }
 
 func (t Time) MarshalText() (text []byte, err error) {
-	const defaultFormant = "2006-01-02 15:04:05 Z07:00"
-	return []byte(t.ProtoType().Format(defaultFormant)), nil
+	return []byte(t.ProtoType().Format(MyTimeFormat)), nil
 }
 
 func (t Time) ProtoType() time.Time {
