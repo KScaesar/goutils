@@ -9,7 +9,7 @@
 定義抽象 同時可以將 開發程式的專注力  
 放在 領域知識 而不是 技術細節
 
-## 重點套件
+## focus package
 
 - [database](./database)
 - [errors](./errors)
