@@ -10,6 +10,10 @@ import (
 	"github.com/Min-Feng/goutils/errors"
 )
 
+func init() {
+	time.Local = time.UTC
+}
+
 var timeSpec = []string{
 	MyTimeFormat,
 	"2006-01-02 15:04:05",
@@ -21,10 +25,13 @@ var timeSpec = []string{
 	"2006-01-02T15:04:05",
 }
 
-func TimeParse(timeLayout string) (t time.Time, err error) {
+func TimeParse(timeLayout string, utc bool) (t time.Time, err error) {
 	for _, spec := range timeSpec {
-		t, err = time.ParseInLocation(spec, timeLayout, time.Local)
+		t, err = time.Parse(spec, timeLayout)
 		if err == nil {
+			if utc {
+				return t.UTC(), nil
+			}
 			return t, nil
 		}
 	}
@@ -42,23 +49,23 @@ func (t *Time) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	std, err := TimeParse(timeString)
+	std, err := TimeParse(timeString, true)
 	*t = Time(std)
 	return err
 }
 
 func (t *Time) UnmarshalBSONValue(b bsontype.Type, bytes []byte) error {
 	rv := bson.RawValue{Type: b, Value: bytes}
-	*t = Time(rv.Time())
+	*t = Time(rv.Time().UTC())
 	return nil
 }
 
 func (t Time) String() string {
-	return t.ProtoType().String()
+	return t.ProtoType().Format(MyTimeFormat)
 }
 
 func (t *Time) UnmarshalText(text []byte) error {
-	std, err := TimeParse(string(text))
+	std, err := TimeParse(string(text), true)
 	*t = Time(std)
 	return err
 }

@@ -22,6 +22,7 @@ func TestTimeParse(t *testing.T) {
 		{timeValue: "2020-09-04 20:30:30"}, // 沒加上時區, 都視為 UTC 時區
 		{timeValue: "2020-09-04 20:30:30Z"},
 		{timeValue: "2020-10-17"}, // 沒加上時區, 都視為 UTC 時區
+		{timeValue: "2020-09-04 20:30:30 +08:00"},
 
 		// Z 的用途 和 T 一樣, 標示間隔 同時保有字串連續性
 		// 且同等正負號的位置
@@ -31,7 +32,7 @@ func TestTimeParse(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			value, err := TimeParse(tt.timeValue)
+			value, err := TimeParse(tt.timeValue, true)
 			assert.NoError(t, err)
 
 			xLog.Debug().

@@ -9,7 +9,7 @@ import (
 
 func FakeTimeNow(fakeTime string) func() time.Time {
 	return func() time.Time {
-		t, err := goutils.TimeParse(fakeTime)
+		t, err := goutils.TimeParse(fakeTime, false)
 		if err != nil {
 			panic(fmt.Sprintf("fake time now: %v", err))
 		}
