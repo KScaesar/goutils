@@ -1,6 +1,10 @@
 package message
 
-import "context"
+import (
+	"context"
+
+	"github.com/Min-Feng/goutils"
+)
 
 type Topic = string
 
@@ -38,4 +42,15 @@ func (req *request) complete(topic Topic) {
 type result struct {
 	payload Response
 	err     error
+}
+
+type InfoBase struct {
+	CorrelationID string       `json:"correlation_id"`
+	MessageID     string       `json:"message_id"`
+	MessageTopic  Topic        `json:"topic"`
+	OccurredAt    goutils.Time `json:"occurred_at"`
+}
+
+func (b *InfoBase) Topic() Topic {
+	return b.MessageTopic
 }
