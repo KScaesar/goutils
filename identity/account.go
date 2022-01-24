@@ -12,7 +12,7 @@ type AccountParam struct {
 
 func NewAccount(param *AccountParam) Account {
 	return Account{
-		UserID:   goutils.NewID(),
+		UserID:   goutils.NewUUID(),
 		UserName: param.UserName,
 		Password: param.Password,
 		Email:    param.Email,
@@ -20,7 +20,7 @@ func NewAccount(param *AccountParam) Account {
 }
 
 type Account struct {
-	UserID   goutils.ID
+	UserID   string
 	UserName string
 	Password HashedPassword
 	Email    string

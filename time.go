@@ -38,7 +38,7 @@ func TimeParse(timeLayout string, utc bool) (t time.Time, err error) {
 	return time.Time{}, errors.Wrap(errors.ErrSystem, err.Error())
 }
 
-const MyTimeFormat = "2006-01-02 15:04:05 -07:00"
+var MyTimeFormat = "2006-01-02 15:04:05 -07:00"
 
 type Time time.Time
 
@@ -61,7 +61,7 @@ func (t *Time) UnmarshalBSONValue(b bsontype.Type, bytes []byte) error {
 }
 
 func (t Time) String() string {
-	return t.ProtoType().Format(MyTimeFormat)
+	return t.Unwrap().Format(MyTimeFormat)
 }
 
 func (t *Time) UnmarshalText(text []byte) error {
@@ -71,9 +71,9 @@ func (t *Time) UnmarshalText(text []byte) error {
 }
 
 func (t Time) MarshalText() (text []byte, err error) {
-	return []byte(t.ProtoType().Format(MyTimeFormat)), nil
+	return []byte(t.Unwrap().Format(MyTimeFormat)), nil
 }
 
-func (t Time) ProtoType() time.Time {
+func (t Time) Unwrap() time.Time {
 	return time.Time(t)
 }

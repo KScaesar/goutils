@@ -3,15 +3,16 @@ package tech
 import (
 	"context"
 
+	"github.com/Min-Feng/goutils"
 	"github.com/Min-Feng/goutils/xLog"
 )
 
-func SetRequestID(ctx context.Context, traceID string) context.Context {
-	return xLog.ContextWithRequestID(ctx, traceID)
+func SetCorrelationID(ctx context.Context, corID string) context.Context {
+	return goutils.ContextWithCorrelationID(ctx, corID)
 }
 
-func RequestID(ctx context.Context) string {
-	return xLog.RequestIDFromContext(ctx)
+func CorrelationID(ctx context.Context) string {
+	return goutils.CorrelationIDFromContext(ctx)
 }
 
 func SetLogger(ctx context.Context, l xLog.WrapperLogger) context.Context {

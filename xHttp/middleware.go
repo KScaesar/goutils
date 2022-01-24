@@ -9,32 +9,28 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/Min-Feng/goutils"
 	"github.com/Min-Feng/goutils/xLog"
 )
 
-const RequestIDHeaderKey = "X-RequestID"
+const CorrelationIDHeaderKey = "X-CorrelationID"
 
-func RequestIDMiddleware(c *gin.Context) {
-	reqID := RequestIDFromHeader(c.Request)
-	c.Writer.Header().Add(RequestIDHeaderKey, reqID)
+func MiddlewareCorrelationID(c *gin.Context) {
+	corID := c.Request.Header.Get(CorrelationIDHeaderKey)
+	if corID == "" {
+		corID = goutils.NewCorrelationID()
+	}
+	c.Writer.Header().Add(CorrelationIDHeaderKey, corID)
 
 	logger := xLog.Logger().
-		RequestID(reqID)
+		CorrelationID(corID)
 
 	ctx := c.Request.Context()
-	ctx1 := xLog.ContextWithRequestID(ctx, reqID)
+	ctx1 := goutils.ContextWithCorrelationID(ctx, corID)
 	ctx2 := xLog.ContextWithLogger(ctx1, logger)
 	c.Request = c.Request.WithContext(ctx2)
 
 	c.Next()
-}
-
-func RequestIDFromHeader(r *http.Request) (reqID string) {
-	reqID = r.Header.Get(RequestIDHeaderKey)
-	if reqID == "" {
-		reqID = xLog.NewRequestID()
-	}
-	return
 }
 
 type respMultiWriter struct {
@@ -47,7 +43,7 @@ func (w *respMultiWriter) Write(b []byte) (int, error) {
 	return w.ResponseWriter.Write(b)
 }
 
-func RecordHttpInfoMiddleware() gin.HandlerFunc {
+func MiddlewareRecordHttpInfo() gin.HandlerFunc {
 	// keywords 若放在匿名函數 containKeyword 裡面, 會造成重複 allocate memory, 利用閉包鎖住變數位址
 	keywords := [][]byte{
 		[]byte("password"),

@@ -25,8 +25,8 @@ go test ./... -trimpath -count 1
 
 ## context.Context 隱藏哪些技術元件
 
-- traceID
-- log
+- correlationID
+- logger
 - transaction object
     1. *gorm.Tx
     2. mongo.Session

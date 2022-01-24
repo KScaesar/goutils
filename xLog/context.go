@@ -4,10 +4,6 @@ import (
 	"context"
 )
 
-// example:
-// https://pkg.go.dev/github.com/rs/zerolog#Logger.WithContext
-// https://pkg.go.dev/github.com/rs/zerolog#Logger.UpdateContext
-
 type logKey struct{}
 
 func ContextWithLogger(ctx context.Context, l WrapperLogger) (logCtx context.Context) {

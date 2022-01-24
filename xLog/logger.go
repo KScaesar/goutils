@@ -79,8 +79,8 @@ func (l WrapperLogger) TriggerKind(kind TriggerKind) WrapperLogger {
 	return l
 }
 
-func (l WrapperLogger) RequestID(requestID string) WrapperLogger {
-	l.prototype = l.prototype.With().Str("request_id", requestID).Logger()
+func (l WrapperLogger) CorrelationID(corID string) WrapperLogger {
+	l.prototype = l.prototype.With().Str("cor_id", corID).Logger()
 	return l
 }
 

@@ -9,7 +9,7 @@ import (
 )
 
 func TestTimeParse(t *testing.T) {
-	// xLog.SetGlobalLevel("panic")
+	xLog.SetGlobalLevel("panic")
 
 	tests := []struct {
 		name      string

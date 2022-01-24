@@ -17,7 +17,7 @@ func TestSendErrorResponse(t *testing.T) {
 
 	gin.SetMode("release")
 	router := gin.New()
-	router.POST("/hello", RequestIDMiddleware, RecordHttpInfoMiddleware(), helloHandlerUseCaseFailed)
+	router.POST("/hello", MiddlewareCorrelationID, MiddlewareRecordHttpInfo(), helloHandlerUseCaseFailed)
 	resp, status := xTest.HttpClientDoJson(router, http.MethodPost, "/hello", nil)
 
 	expectedResp := `

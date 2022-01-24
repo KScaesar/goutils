@@ -12,7 +12,7 @@ func _() {
 	_ = x[TriggerKindHttp-1]
 	_ = x[TriggerKindWebsocket-2]
 	_ = x[TriggerKindGrpc-3]
-	_ = x[TriggerKindMessageBroker-4]
+	_ = x[TriggerKindMQ-4]
 }
 
 const _TriggerKind_name = "unknownhttpwebsocketgrpcmq"

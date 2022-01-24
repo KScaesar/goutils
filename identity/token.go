@@ -2,8 +2,6 @@ package identity
 
 import (
 	"time"
-
-	"github.com/Min-Feng/goutils"
 )
 
 type TokenKind string
@@ -18,25 +16,25 @@ type TokenConfig struct {
 	RefreshInterval time.Duration
 }
 
-func NewAccessToken(id goutils.ID) Token {
+func NewAccessToken(userID string) Token {
 	return Token{
 		Kind:     TokenKindAccess,
-		UserID:   id,
+		UserID:   userID,
 		DeadLine: TimeNow().Add(setting.Token.AccessInterval),
 	}
 }
 
-func NewRefreshToken(id goutils.ID) Token {
+func NewRefreshToken(userID string) Token {
 	return Token{
 		Kind:     TokenKindRefresh,
-		UserID:   id,
+		UserID:   userID,
 		DeadLine: TimeNow().Add(setting.Token.RefreshInterval),
 	}
 }
 
 type Token struct {
 	Kind     TokenKind
-	UserID   goutils.ID
+	UserID   string
 	DeadLine time.Time
 }
 

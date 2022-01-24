@@ -18,7 +18,7 @@ func TestMiddleware_Success(t *testing.T) {
 
 	gin.SetMode("release")
 	router := gin.New()
-	router.POST("/hello", RequestIDMiddleware, RecordHttpInfoMiddleware(), helloHandlerSuccess)
+	router.POST("/hello", MiddlewareCorrelationID, MiddlewareRecordHttpInfo(), helloHandlerSuccess)
 
 	body := bytes.NewBufferString(`{"name":"caesar"}`)
 	resp, status := xTest.HttpClientDoJson(router, http.MethodPost, "/hello", body)
