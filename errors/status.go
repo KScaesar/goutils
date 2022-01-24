@@ -18,8 +18,7 @@ func Code(err error) int {
 		return UndefinedCode
 	}
 
-	base := errors.Cause(err).(*baseError)
-	return base.code
+	return errors.Cause(err).(customError).Code()
 }
 
 func HttpStatus(err error) int {
@@ -31,8 +30,7 @@ func HttpStatus(err error) int {
 		return http.StatusInternalServerError
 	}
 
-	base := errors.Cause(err).(*baseError)
-	return base.httpStatus
+	return errors.Cause(err).(customError).HttpStatus()
 }
 
 // SimpleInfo 只取第一次 Wrap 的資訊, 後續 WrapMessage 函數的訊息不會保留,

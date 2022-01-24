@@ -18,7 +18,17 @@ func (b *baseError) Error() string {
 	return b.description
 }
 
+func (b *baseError) Code() int {
+	return b.code
+}
+
+func (b *baseError) HttpStatus() int {
+	return b.httpStatus
+}
+
+func (b *baseError) rootCause() {}
+
 func IsUndefinedError(err error) bool {
-	_, ok := errors.Cause(err).(*baseError)
+	_, ok := errors.Cause(err).(customError)
 	return !ok
 }
