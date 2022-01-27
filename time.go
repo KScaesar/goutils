@@ -2,6 +2,7 @@ package goutils
 
 import (
 	"bytes"
+	"sync"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -14,20 +15,42 @@ func init() {
 	time.Local = time.UTC
 }
 
-var timeSpec = []string{
-	MyTimeFormat,
-	"2006-01-02 15:04:05",
-	"2006-01-02 15:04",
-	"2006-01-02",
-	"2006-01-02 15:04:05Z07:00",
-	time.RFC3339,
-	"2006-01-02T15:04",
-	"2006-01-02T15:04:05",
+const MyTimeFormat = "2006-01-02 15:04:05 -07:00"
+
+var defaultTimeSpec = timeSpec{
+	list: []string{
+		MyTimeFormat,
+		"2006-01-02 15:04:05",
+		"2006-01-02 15:04",
+		"2006-01-02",
+		"2006-01-02 15:04:05Z07:00",
+		time.RFC3339,
+		"2006-01-02T15:04",
+		"2006-01-02T15:04:05",
+	},
 }
 
-func TimeParse(timeLayout string, utc bool) (t time.Time, err error) {
-	for _, spec := range timeSpec {
-		t, err = time.Parse(spec, timeLayout)
+type timeSpec struct {
+	mu   sync.Mutex
+	list []string
+}
+
+func (v *timeSpec) append(layout string) {
+	v.mu.Lock()
+	newSlice := make([]string, 1, len(v.list)+1)
+	newSlice[0] = layout
+	newSlice = append(newSlice, v.list...)
+	v.list = newSlice
+	v.mu.Unlock()
+}
+
+func RegisterTimeSpec(layout string) {
+	defaultTimeSpec.append(layout)
+}
+
+func TimeParse(layout string, utc bool) (t time.Time, err error) {
+	for _, spec := range defaultTimeSpec.list {
+		t, err = time.Parse(spec, layout)
 		if err == nil {
 			if utc {
 				return t.UTC(), nil
@@ -35,10 +58,10 @@ func TimeParse(timeLayout string, utc bool) (t time.Time, err error) {
 			return t, nil
 		}
 	}
-	return time.Time{}, errors.Wrap(errors.ErrSystem, err.Error())
-}
 
-var MyTimeFormat = "2006-01-02 15:04:05 -07:00"
+	err = errors.Wrap(errors.ErrSystem, err.Error())
+	return
+}
 
 type Time time.Time
 
@@ -61,7 +84,7 @@ func (t *Time) UnmarshalBSONValue(b bsontype.Type, bytes []byte) error {
 }
 
 func (t Time) String() string {
-	return t.Unwrap().Format(MyTimeFormat)
+	return t.ProtoType().Format(MyTimeFormat)
 }
 
 func (t *Time) UnmarshalText(text []byte) error {
@@ -71,9 +94,9 @@ func (t *Time) UnmarshalText(text []byte) error {
 }
 
 func (t Time) MarshalText() (text []byte, err error) {
-	return []byte(t.Unwrap().Format(MyTimeFormat)), nil
+	return []byte(t.ProtoType().Format(MyTimeFormat)), nil
 }
 
-func (t Time) Unwrap() time.Time {
+func (t Time) ProtoType() time.Time {
 	return time.Time(t)
 }
