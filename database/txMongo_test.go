@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package database_test
@@ -12,6 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 
+	"github.com/Min-Feng/goutils"
 	"github.com/Min-Feng/goutils/database"
 )
 
@@ -31,9 +33,12 @@ func Test_txMongo_AutoComplete(t *testing.T) {
 	fn := func(name string) func(txCtx context.Context) error {
 		return func(txCtx context.Context) error {
 			book := &DomainBook{
+				SqlID:    "",
+				MongoID:  primitive.ObjectID{},
 				Name:     "python" + "#" + name,
 				NoTzTime: time.Now(),
 				TzTime:   time.Now(),
+				UpdateAt: goutils.Time(time.Now()),
 			}
 			if err := repo.createBook(txCtx, book); err != nil {
 				return err

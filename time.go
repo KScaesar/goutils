@@ -2,11 +2,13 @@ package goutils
 
 import (
 	"bytes"
+	"database/sql/driver"
 	"sync"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/bsontype"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/Min-Feng/goutils/errors"
 )
@@ -35,7 +37,7 @@ type timeSpec struct {
 	list []string
 }
 
-func (v *timeSpec) append(layout string) {
+func (v *timeSpec) appendToHead(layout string) {
 	v.mu.Lock()
 	newSlice := make([]string, 1, len(v.list)+1)
 	newSlice[0] = layout
@@ -45,7 +47,7 @@ func (v *timeSpec) append(layout string) {
 }
 
 func RegisterTimeSpec(layout string) {
-	defaultTimeSpec.append(layout)
+	defaultTimeSpec.appendToHead(layout)
 }
 
 func TimeParse(layout string, utc bool) (t time.Time, err error) {
@@ -65,6 +67,33 @@ func TimeParse(layout string, utc bool) (t time.Time, err error) {
 
 type Time time.Time
 
+func (t *Time) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case time.Time:
+		*t = Time(s)
+
+	case []byte:
+		stdTime, err := TimeParse(string(s), true)
+		if err != nil {
+			return err
+		}
+		*t = Time(stdTime)
+
+	case string:
+		stdTime, err := TimeParse(s, true)
+		if err != nil {
+			return err
+		}
+		*t = Time(stdTime)
+	}
+
+	return nil
+}
+
+func (t *Time) Value() (driver.Value, error) {
+	return time.Time(*t), nil
+}
+
 func (t *Time) UnmarshalJSON(data []byte) error {
 	timeString := string(bytes.Trim(data, `"`))
 
@@ -81,6 +110,11 @@ func (t *Time) UnmarshalBSONValue(b bsontype.Type, bytes []byte) error {
 	rv := bson.RawValue{Type: b, Value: bytes}
 	*t = Time(rv.Time().UTC())
 	return nil
+}
+
+func (t *Time) MarshalBSONValue() (bsontype.Type, []byte, error) {
+	targetTime := primitive.NewDateTimeFromTime(time.Time(*t))
+	return bson.MarshalValue(targetTime)
 }
 
 func (t Time) String() string {

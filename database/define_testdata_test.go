@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package database_test
@@ -8,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 
+	"github.com/Min-Feng/goutils"
 	"github.com/Min-Feng/goutils/database"
 )
 
@@ -34,7 +36,7 @@ type DomainBook struct {
 	Name     string             `gorm:"column:name;type:varchar(50)"     bson:"name"`
 	NoTzTime time.Time          `gorm:"column:no_tz_time;type:timestamp" bson:"no_tz_time"`
 	TzTime   time.Time          `gorm:"column:tz_time;type:timestamptz"  bson:"tz_time"`
-	UpdateAt time.Time          `gorm:"column:update_at;type:timestamptz;autoUpdateTime"  bson:"update_at"`
+	UpdateAt goutils.Time       `gorm:"column:update_at;type:timestamptz;autoUpdateTime"  bson:"update_at"`
 }
 
 func mongoClient(cfg *database.ReplicaSetMongoConfig) *mongo.Client {

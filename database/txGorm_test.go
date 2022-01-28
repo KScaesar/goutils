@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package database_test
@@ -9,6 +10,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/Min-Feng/goutils"
 	"github.com/Min-Feng/goutils/database"
 )
 
@@ -32,6 +34,7 @@ func Test_txGorm_AutoComplete(t *testing.T) {
 				Name:     "python" + "#" + name,
 				NoTzTime: time.Now(),
 				TzTime:   time.Now(),
+				UpdateAt: goutils.Time(time.Now()),
 			}
 			if err := repo.createBook(txCtx, book); err != nil {
 				return err
