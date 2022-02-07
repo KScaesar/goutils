@@ -3,7 +3,7 @@ package goutils
 import "context"
 
 func NewCorrelationID() string {
-	return NewUUID()
+	return NewULID()
 }
 
 type correlationIDKey struct{}
