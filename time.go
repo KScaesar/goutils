@@ -90,8 +90,8 @@ func (t *Time) Scan(src interface{}) error {
 	return nil
 }
 
-func (t *Time) Value() (driver.Value, error) {
-	return time.Time(*t), nil
+func (t Time) Value() (driver.Value, error) {
+	return time.Time(t), nil
 }
 
 func (t *Time) UnmarshalJSON(data []byte) error {
@@ -112,8 +112,8 @@ func (t *Time) UnmarshalBSONValue(b bsontype.Type, bytes []byte) error {
 	return nil
 }
 
-func (t *Time) MarshalBSONValue() (bsontype.Type, []byte, error) {
-	targetTime := primitive.NewDateTimeFromTime(time.Time(*t))
+func (t Time) MarshalBSONValue() (bsontype.Type, []byte, error) {
+	targetTime := primitive.NewDateTimeFromTime(time.Time(t))
 	return bson.MarshalValue(targetTime)
 }
 
@@ -131,6 +131,6 @@ func (t Time) MarshalText() (text []byte, err error) {
 	return []byte(t.ProtoType().Format(MyTimeFormat)), nil
 }
 
-func (t Time) ProtoType() time.Time {
-	return time.Time(t)
+func (t *Time) ProtoType() time.Time {
+	return time.Time(*t)
 }
