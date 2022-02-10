@@ -10,32 +10,47 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-func init() {
-	rand.Seed(time.Now().UnixNano())
-	entropySeed := time.Now().
-		Add(time.Duration(rand.Int63()) * time.Second).
-		UnixNano()
-
-	entropyPool.New = func() interface{} {
-		return ulid.Monotonic(rand.New(rand.NewSource(entropySeed)), 0)
-	}
-}
-
 type (
 	UUID = string
 	ULID = string
 )
 
-var entropyPool sync.Pool
+var defaultEntropyPool = newULIDEntropyPool()
 
 func NewULID() ULID {
-	entropy := entropyPool.Get().(io.Reader)
-	defer entropyPool.Put(entropy)
+	entropy := defaultEntropyPool.Get().(io.Reader)
+	defer defaultEntropyPool.Put(entropy)
 
 	now := ulid.Now()
 	id := ulid.MustNew(now, entropy)
 
 	return id.String()
+}
+
+func NewULIDForReplay(t time.Time) ULID {
+	entropy := newULIDEntropyFactory(time.Now)()
+	id := ulid.MustNew(ulid.Timestamp(t), entropy)
+	return id.String()
+}
+
+func newULIDEntropyPool() sync.Pool {
+	factory := newULIDEntropyFactory(time.Now)
+	return sync.Pool{
+		New: func() interface{} {
+			return factory()
+		},
+	}
+}
+
+func newULIDEntropyFactory(timeNowFn func() time.Time) func() *ulid.MonotonicEntropy {
+	rand.Seed(timeNowFn().UnixNano())
+	randomTime := time.Duration(rand.Int63()) * time.Millisecond
+	seed := timeNowFn().Add(randomTime).UnixNano()
+
+	return func() *ulid.MonotonicEntropy {
+		seed++
+		return ulid.Monotonic(rand.New(rand.NewSource(seed)), 0)
+	}
 }
 
 func NewUUID() UUID {
