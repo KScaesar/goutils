@@ -91,10 +91,38 @@ func (t *Time) Scan(src interface{}) error {
 }
 
 func (t Time) Value() (driver.Value, error) {
+	if t.ProtoType().IsZero() {
+		return nil, nil
+	}
+
 	return time.Time(t), nil
 }
 
+func (t *Time) UnmarshalBSONValue(b bsontype.Type, bytes []byte) error {
+	if b == bsontype.Null {
+		return nil
+	}
+
+	rv := bson.RawValue{Type: b, Value: bytes}
+	*t = Time(rv.Time().UTC())
+	return nil
+}
+
+func (t Time) MarshalBSONValue() (bsontype.Type, []byte, error) {
+	if t.ProtoType().IsZero() {
+		return bson.MarshalValue(primitive.Null{})
+	}
+
+	targetTime := primitive.NewDateTimeFromTime(time.Time(t))
+	return bson.MarshalValue(targetTime)
+}
+
+func (t Time) String() string {
+	return t.ProtoType().Format(MyTimeFormat)
+}
+
 func (t *Time) UnmarshalJSON(data []byte) error {
+
 	timeString := string(bytes.Trim(data, `"`))
 
 	if timeString == "null" || timeString == "" || timeString == "nil" {
@@ -106,28 +134,23 @@ func (t *Time) UnmarshalJSON(data []byte) error {
 	return err
 }
 
-func (t *Time) UnmarshalBSONValue(b bsontype.Type, bytes []byte) error {
-	rv := bson.RawValue{Type: b, Value: bytes}
-	*t = Time(rv.Time().UTC())
-	return nil
-}
-
-func (t Time) MarshalBSONValue() (bsontype.Type, []byte, error) {
-	targetTime := primitive.NewDateTimeFromTime(time.Time(t))
-	return bson.MarshalValue(targetTime)
-}
-
-func (t Time) String() string {
-	return t.ProtoType().Format(MyTimeFormat)
-}
-
 func (t *Time) UnmarshalText(text []byte) error {
+	tString := string(text)
+
+	if tString == "null" || tString == "" || tString == "nil" {
+		return nil
+	}
+
 	std, err := TimeParse(string(text), true)
 	*t = Time(std)
 	return err
 }
 
 func (t Time) MarshalText() (text []byte, err error) {
+	if t.ProtoType().IsZero() {
+		return []byte(""), nil
+	}
+
 	return []byte(t.ProtoType().Format(MyTimeFormat)), nil
 }
 

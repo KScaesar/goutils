@@ -13,8 +13,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 
-	"github.com/Min-Feng/goutils"
 	"github.com/Min-Feng/goutils/database"
+	"github.com/Min-Feng/goutils/xLog"
 )
 
 func Test_txMongo_AutoComplete(t *testing.T) {
@@ -30,15 +30,17 @@ func Test_txMongo_AutoComplete(t *testing.T) {
 
 	tx := txFactory.CreateTx(nil)
 
+	id := primitive.NewObjectID()
 	fn := func(name string) func(txCtx context.Context) error {
 		return func(txCtx context.Context) error {
+			now := time.Now()
 			book := &DomainBook{
-				SqlID:    "",
-				MongoID:  primitive.ObjectID{},
+				MongoID:  id,
 				Name:     "python" + "#" + name,
-				NoTzTime: time.Now(),
-				TzTime:   time.Now(),
-				UpdateAt: goutils.Time(time.Now()),
+				NoTzTime: now,
+				TzTime:   now,
+				// NullTime: goutils.Time(now),
+				// AutoTIme: goutils.Time(now),
 			}
 			if err := repo.createBook(txCtx, book); err != nil {
 				return err
@@ -56,8 +58,12 @@ func Test_txMongo_AutoComplete(t *testing.T) {
 	err := tx.AutoComplete(fn("enable tx"))
 	assert.NoError(t, err, "enable tx")
 
-	err = fn("disable tx")(nil)
-	assert.NoError(t, err, "disable tx")
+	// err = fn("disable tx")(nil)
+	// assert.NoError(t, err, "disable tx")
+
+	book, err := repo.getBook(nil, id)
+	assert.NoError(t, err)
+	xLog.Info().Interface("book", book).Send()
 }
 
 type bookMongoRepo struct {
@@ -65,19 +71,15 @@ type bookMongoRepo struct {
 }
 
 func (repo *bookMongoRepo) createBook(ctx context.Context, book *DomainBook) error {
-	book.MongoID = primitive.NewObjectID()
 	_, err := repo.col.InsertOne(ctx, book)
 	return err
 }
 
 func (repo *bookMongoRepo) updateBook(ctx context.Context, book *DomainBook) error {
-	query := mongoQuery{}
-	_, err := repo.col.UpdateOne(ctx, query.ID(book.MongoID), bson.M{"$set": book})
+	_, err := repo.col.UpdateOne(ctx, bson.M{"id": book.MongoID}, bson.M{"$set": book})
 	return err
 }
 
-type mongoQuery struct{}
-
-func (f mongoQuery) ID(id interface{}) bson.D {
-	return bson.D{{"_id", id}}
+func (repo *bookMongoRepo) getBook(ctx context.Context, id primitive.ObjectID) (book DomainBook, err error) {
+	return book, repo.col.FindOne(ctx, bson.M{"_id": id}).Decode(&book)
 }

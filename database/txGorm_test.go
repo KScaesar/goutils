@@ -12,6 +12,7 @@ import (
 
 	"github.com/Min-Feng/goutils"
 	"github.com/Min-Feng/goutils/database"
+	"github.com/Min-Feng/goutils/xLog"
 )
 
 func Test_txGorm_AutoComplete(t *testing.T) {
@@ -28,13 +29,17 @@ func Test_txGorm_AutoComplete(t *testing.T) {
 
 	tx := txFactory.CreateTx(nil)
 
+	id := goutils.NewULID()
 	fn := func(name string) func(txCtx context.Context) error {
 		return func(txCtx context.Context) error {
+			now := time.Now()
 			book := &DomainBook{
+				SqlID:    id,
 				Name:     "python" + "#" + name,
-				NoTzTime: time.Now(),
-				TzTime:   time.Now(),
-				UpdateAt: goutils.Time(time.Now()),
+				NoTzTime: now,
+				TzTime:   now,
+				// NullTime: goutils.Time(now),
+				// AutoTIme: goutils.Time(now),
 			}
 			if err := repo.createBook(txCtx, book); err != nil {
 				return err
@@ -52,8 +57,12 @@ func Test_txGorm_AutoComplete(t *testing.T) {
 	err := tx.AutoComplete(fn("enable tx"))
 	assert.NoError(t, err, "enable tx")
 
-	err = fn("disable tx")(nil)
-	assert.NoError(t, err, "disable tx")
+	// err = fn("disable tx")(nil)
+	// assert.NoError(t, err, "disable tx")
+
+	book, err := repo.getBook(nil, id)
+	assert.NoError(t, err)
+	xLog.Info().Interface("book", book).Send()
 }
 
 type bookGormRepo struct {
@@ -62,11 +71,16 @@ type bookGormRepo struct {
 }
 
 func (repo *bookGormRepo) createBook(ctx context.Context, book *DomainBook) error {
-	p := repo.db.TxFromContextAndSelectProcessor(ctx)
+	p := repo.db.SelectProcessor(ctx)
 	return p.Table(repo.tableName).Create(book).Error
 }
 
 func (repo *bookGormRepo) updateBook(ctx context.Context, book *DomainBook) error {
-	p := repo.db.TxFromContextAndSelectProcessor(ctx)
+	p := repo.db.SelectProcessor(ctx)
 	return p.Table(repo.tableName).Save(book).Error
+}
+
+func (repo *bookGormRepo) getBook(ctx context.Context, id string) (book DomainBook, err error) {
+	p := repo.db.SelectProcessor(ctx)
+	return book, p.Table(repo.tableName).Where("id = ?", id).Find(&book).Error
 }

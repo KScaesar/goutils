@@ -31,12 +31,13 @@ func (s *infraBook) CollectionName() string {
 }
 
 type DomainBook struct {
-	SqlID    string             `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()" bson:"-"`
-	MongoID  primitive.ObjectID `gorm:"-"                                bson:"_id"`
-	Name     string             `gorm:"column:name;type:varchar(50)"     bson:"name"`
-	NoTzTime time.Time          `gorm:"column:no_tz_time;type:timestamp" bson:"no_tz_time"`
-	TzTime   time.Time          `gorm:"column:tz_time;type:timestamptz"  bson:"tz_time"`
-	UpdateAt goutils.Time       `gorm:"column:update_at;type:timestamptz;autoUpdateTime"  bson:"update_at"`
+	SqlID    string             `gorm:"column:id;type:varchar(26);primaryKey" bson:"-"`
+	MongoID  primitive.ObjectID `gorm:"-"                                 bson:"_id"`
+	Name     string             `gorm:"column:name;type:varchar(50)"      bson:"name"`
+	NoTzTime time.Time          `gorm:"column:no_tz_time;type:timestamp"  bson:"no_tz_time"`
+	TzTime   time.Time          `gorm:"column:tz_time;type:timestamptz"   bson:"tz_time"`
+	NullTime goutils.Time       `gorm:"column:null_time;type:timestamptz" bson:"null_time"`
+	AutoTIme goutils.Time       `gorm:"column:auto_time;type:timestamptz;autoUpdateTime"  bson:"auto_time"`
 }
 
 func mongoClient(cfg *database.ReplicaSetMongoConfig) *mongo.Client {
