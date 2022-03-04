@@ -21,10 +21,11 @@ func (p PageOption) Init() PageOption {
 	pNumber := p.PageNumber
 	pSize := p.PageSize
 
-	switch {
-	case p.PageNumber <= 0:
+	if p.PageNumber <= 0 {
 		pNumber = defaultPageNumber
+	}
 
+	switch {
 	case p.PageSize <= 0:
 		pSize = defaultPageSize
 

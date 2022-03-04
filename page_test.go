@@ -106,6 +106,19 @@ func TestNewPageResponse(t *testing.T) {
 				TargetPageSize:   0,
 			},
 		},
+		{
+			name: "7",
+			args: args{
+				opt:        NewPageOption(0, 0),
+				totalCount: 0,
+			},
+			expect: PageResponse{
+				TotalPageNumber:  1,
+				TotalCount:       0,
+				TargetPageNumber: 1,
+				TargetPageSize:   0,
+			},
+		},
 	}
 
 	for _, tt := range tests {
