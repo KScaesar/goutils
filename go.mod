@@ -14,7 +14,7 @@ require (
 	github.com/stretchr/testify v1.6.1
 	github.com/tdewolff/minify/v2 v2.9.16
 	github.com/tidwall/gjson v1.8.0
-	go.mongodb.org/mongo-driver v1.7.0
+	go.mongodb.org/mongo-driver v1.8.4
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292
 	google.golang.org/api v0.50.0
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
