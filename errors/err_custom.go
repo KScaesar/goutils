@@ -4,4 +4,5 @@ type customError interface {
 	rootCause()
 	Code() int
 	HttpStatus() int
+	Error() string
 }
