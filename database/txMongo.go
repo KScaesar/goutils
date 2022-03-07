@@ -11,7 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 	"go.mongodb.org/mongo-driver/x/mongo/driver"
 
-	"github.com/Min-Feng/goutils/errors"
+	"github.com/KScaesar/goutils/errors"
 )
 
 type MongoTxConfigs struct {

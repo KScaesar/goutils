@@ -3,7 +3,7 @@ package message
 import (
 	"encoding/json"
 
-	"github.com/Min-Feng/goutils/errors"
+	"github.com/KScaesar/goutils/errors"
 )
 
 // AdapterMessage 從 queue 接收資料時, 可以利用此型別進行判斷處理

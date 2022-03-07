@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Min-Feng/goutils/errors"
+	"github.com/KScaesar/goutils/errors"
 )
 
 func NewBroker() *Broker {

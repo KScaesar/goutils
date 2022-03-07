@@ -10,9 +10,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Min-Feng/goutils"
-	"github.com/Min-Feng/goutils/database"
-	"github.com/Min-Feng/goutils/xLog"
+	"github.com/KScaesar/goutils"
+	"github.com/KScaesar/goutils/database"
+	"github.com/KScaesar/goutils/xLog"
 )
 
 func Test_txGorm_AutoComplete(t *testing.T) {

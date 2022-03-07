@@ -3,7 +3,7 @@ package xLog
 import (
 	"github.com/rs/zerolog"
 
-	"github.com/Min-Feng/goutils/errors"
+	"github.com/KScaesar/goutils/errors"
 )
 
 func errorStackMarshaler(err error) interface{} {

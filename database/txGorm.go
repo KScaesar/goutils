@@ -5,7 +5,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/Min-Feng/goutils/errors"
+	"github.com/KScaesar/goutils/errors"
 )
 
 func NewGormTxFactory(db *WrapperGorm) TxFactory {

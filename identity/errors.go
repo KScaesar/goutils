@@ -3,7 +3,7 @@ package identity
 import (
 	"net/http"
 
-	"github.com/Min-Feng/goutils/errors"
+	"github.com/KScaesar/goutils/errors"
 )
 
 var (

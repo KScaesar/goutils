@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson"
 
-	"github.com/Min-Feng/goutils"
+	"github.com/KScaesar/goutils"
 )
 
 func TestMongoSort(t *testing.T) {

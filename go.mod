@@ -1,4 +1,4 @@
-module github.com/Min-Feng/goutils
+module github.com/KScaesar/goutils
 
 go 1.16
 

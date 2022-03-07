@@ -9,8 +9,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 
-	"github.com/Min-Feng/goutils"
-	"github.com/Min-Feng/goutils/database"
+	"github.com/KScaesar/goutils"
+	"github.com/KScaesar/goutils/database"
 )
 
 var dbName = "integration_test"

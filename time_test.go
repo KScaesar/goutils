@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Min-Feng/goutils/xLog"
+	"github.com/KScaesar/goutils/xLog"
 )
 
 func TestTimeParse(t *testing.T) {

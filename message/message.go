@@ -3,7 +3,7 @@ package message
 import (
 	"context"
 
-	"github.com/Min-Feng/goutils"
+	"github.com/KScaesar/goutils"
 )
 
 type Topic = string

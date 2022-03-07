@@ -9,11 +9,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/tidwall/gjson"
 
-	"github.com/Min-Feng/goutils/errors"
-	"github.com/Min-Feng/goutils/xTest"
+	"github.com/KScaesar/goutils/errors"
+	"github.com/KScaesar/goutils/xTest"
 )
 
-//go:generate go test -trimpath -run=TestError -v github.com/Min-Feng/goutils/xLog
+//go:generate go test -trimpath -run=TestError -v github.com/KScaesar/goutils/xLog
 func TestError(t *testing.T) {
 	writer := &bytes.Buffer{}
 	Init("error", false)
@@ -26,7 +26,7 @@ func TestError(t *testing.T) {
   "level": "error",
   "stack": [
     [
-      "github.com/Min-Feng/goutils/xLog.TestError github.com/Min-Feng/goutils/xLog/default_test.go:43 ",
+      "github.com/KScaesar/goutils/xLog.TestError github.com/KScaesar/goutils/xLog/default_test.go:43 ",
       "testing.tRunner testing/testing.go:1193 ",
       "runtime.goexit runtime/asm_amd64.s:1371 "
     ]
@@ -35,7 +35,7 @@ func TestError(t *testing.T) {
     "err_msg": "unit test: json failed",
     "err_code": 8787
   },
-  "caller": "github.com/Min-Feng/goutils/xLog/default_test.go:42",
+  "caller": "github.com/KScaesar/goutils/xLog/default_test.go:42",
   "timestamp": 1639440000000
 }`
 

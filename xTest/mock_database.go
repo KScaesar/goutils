@@ -9,7 +9,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	"github.com/Min-Feng/goutils/database"
+	"github.com/KScaesar/goutils/database"
 )
 
 // MockGormMysql

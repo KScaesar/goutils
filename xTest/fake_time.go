@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Min-Feng/goutils"
+	"github.com/KScaesar/goutils"
 )
 
 func FakeTimeNow(fakeTime string) func() time.Time {

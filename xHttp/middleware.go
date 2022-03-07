@@ -9,8 +9,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/Min-Feng/goutils"
-	"github.com/Min-Feng/goutils/xLog"
+	"github.com/KScaesar/goutils"
+	"github.com/KScaesar/goutils/xLog"
 )
 
 const CorrelationIDHeaderKey = "X-CorrelationID"

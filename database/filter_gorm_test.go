@@ -6,9 +6,9 @@ import (
 	"github.com/fatih/structs"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Min-Feng/goutils"
-	"github.com/Min-Feng/goutils/database"
-	"github.com/Min-Feng/goutils/xTest"
+	"github.com/KScaesar/goutils"
+	"github.com/KScaesar/goutils/database"
+	"github.com/KScaesar/goutils/xTest"
 )
 
 func TestGormFilter(t *testing.T) {

@@ -1,7 +1,7 @@
 package identity
 
 import (
-	"github.com/Min-Feng/goutils"
+	"github.com/KScaesar/goutils"
 )
 
 type AccountParam struct {

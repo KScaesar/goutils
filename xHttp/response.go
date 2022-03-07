@@ -1,7 +1,7 @@
 package xHttp
 
 import (
-	"github.com/Min-Feng/goutils/errors"
+	"github.com/KScaesar/goutils/errors"
 )
 
 func NewNormalResponse(data interface{}) *Response {

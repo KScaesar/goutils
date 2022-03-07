@@ -3,7 +3,7 @@ package xHttp
 import (
 	"bytes"
 
-	"github.com/Min-Feng/goutils/errors"
+	"github.com/KScaesar/goutils/errors"
 )
 
 func init() {

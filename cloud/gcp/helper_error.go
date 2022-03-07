@@ -3,7 +3,7 @@ package gcp
 import (
 	"google.golang.org/api/compute/v1"
 
-	"github.com/Min-Feng/goutils/errors"
+	"github.com/KScaesar/goutils/errors"
 )
 
 func extractError(src *compute.Operation) error {

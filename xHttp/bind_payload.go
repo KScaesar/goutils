@@ -3,7 +3,7 @@ package xHttp
 import (
 	"github.com/gin-gonic/gin"
 
-	"github.com/Min-Feng/goutils/errors"
+	"github.com/KScaesar/goutils/errors"
 )
 
 // BindPayload

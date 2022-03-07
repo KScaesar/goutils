@@ -4,7 +4,7 @@ import (
 	"github.com/fatih/structs"
 	"gorm.io/gorm"
 
-	"github.com/Min-Feng/goutils"
+	"github.com/KScaesar/goutils"
 )
 
 // GormFilter filter 可傳入 struct or goutils.FilterOption,

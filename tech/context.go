@@ -3,8 +3,8 @@ package tech
 import (
 	"context"
 
-	"github.com/Min-Feng/goutils"
-	"github.com/Min-Feng/goutils/xLog"
+	"github.com/KScaesar/goutils"
+	"github.com/KScaesar/goutils/xLog"
 )
 
 func SetCorrelationID(ctx context.Context, corID string) context.Context {

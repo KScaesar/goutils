@@ -7,9 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Min-Feng/goutils/errors"
-	"github.com/Min-Feng/goutils/xLog"
-	"github.com/Min-Feng/goutils/xTest"
+	"github.com/KScaesar/goutils/errors"
+	"github.com/KScaesar/goutils/xLog"
+	"github.com/KScaesar/goutils/xTest"
 )
 
 func TestSendErrorResponse(t *testing.T) {

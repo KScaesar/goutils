@@ -3,8 +3,8 @@ package xHttp
 import (
 	"github.com/gin-gonic/gin"
 
-	"github.com/Min-Feng/goutils/errors"
-	"github.com/Min-Feng/goutils/xLog"
+	"github.com/KScaesar/goutils/errors"
+	"github.com/KScaesar/goutils/xLog"
 )
 
 func SendErrorResponse(c *gin.Context, err error) {
