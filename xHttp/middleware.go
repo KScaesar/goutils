@@ -3,7 +3,6 @@ package xHttp
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -43,6 +42,20 @@ func (w *respMultiWriter) Write(b []byte) (int, error) {
 	return w.ResponseWriter.Write(b)
 }
 
+type requestMultiReader struct {
+	io.ReadCloser
+	body bytes.Buffer
+}
+
+func (r *requestMultiReader) Read(p []byte) (n int, err error) {
+	r.body.Read(p)
+	return r.ReadCloser.Read(p)
+}
+
+func (r *requestMultiReader) Close() error {
+	return r.ReadCloser.Close()
+}
+
 func MiddlewareRecordHttpInfo() gin.HandlerFunc {
 	// keywords 若放在匿名函數 containKeyword 裡面, 會造成重複 allocate memory, 利用閉包鎖住變數位址
 	keywords := [][]byte{
@@ -61,11 +74,11 @@ func MiddlewareRecordHttpInfo() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 
-		var reqBody bytes.Buffer
+		var reqReader requestMultiReader
 		var respWriter respMultiWriter
 		if xLog.IsDebugLevel() {
-			teeReader := io.TeeReader(c.Request.Body, &reqBody)
-			c.Request.Body = ioutil.NopCloser(teeReader)
+			reqReader.ReadCloser = c.Request.Body
+			c.Request.Body = &reqReader
 
 			respWriter.ResponseWriter = c.Writer
 			c.Writer = &respWriter
@@ -85,9 +98,9 @@ func MiddlewareRecordHttpInfo() gin.HandlerFunc {
 		}
 		logger = logger.RecordHttp(info)
 
-		if xLog.IsDebugLevel() && !containKeyword(reqBody.Bytes()) {
+		if xLog.IsDebugLevel() && !containKeyword(reqReader.body.Bytes()) {
 			debug := &xLog.HttpMetricDebug{
-				ReqBody:  reqBody.String(),
+				ReqBody:  reqReader.body.String(),
 				RespBody: respWriter.body.String(),
 			}
 			logger = logger.RecordHttpForDebug(debug)
