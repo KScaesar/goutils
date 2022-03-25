@@ -48,8 +48,7 @@ type requestMultiReader struct {
 }
 
 func (r *requestMultiReader) Read(p []byte) (n int, err error) {
-	r.body.Read(p)
-	return r.ReadCloser.Read(p)
+	return io.TeeReader(r.ReadCloser, &r.body).Read(p)
 }
 
 func (r *requestMultiReader) Close() error {
