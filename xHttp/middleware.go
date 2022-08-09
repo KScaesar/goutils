@@ -106,10 +106,10 @@ func MiddlewareRecordHttpInfo() gin.HandlerFunc {
 		}
 
 		if c.Writer.Status() >= http.StatusBadRequest {
-			logger.RecordHttp(info).Unwrap().Error().Send()
+			logger.Unwrap().Error().Send()
 			return
 		}
 
-		logger.RecordHttp(info).Unwrap().Info().Send()
+		logger.Unwrap().Info().Send()
 	}
 }
