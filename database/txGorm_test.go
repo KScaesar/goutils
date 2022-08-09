@@ -38,8 +38,8 @@ func Test_txGorm_AutoComplete(t *testing.T) {
 				Name:     "python" + "#" + name,
 				NoTzTime: now,
 				TzTime:   now,
-				// NullTime: goutils.Time(now),
-				// AutoTIme: goutils.Time(now),
+				NullTime: goutils.Time(now),
+				AutoTIme: goutils.Time(now),
 			}
 			if err := repo.createBook(txCtx, book); err != nil {
 				return err
