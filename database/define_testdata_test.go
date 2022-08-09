@@ -15,21 +15,6 @@ import (
 
 var dbName = "integration_test"
 
-type infraBook struct {
-	// DomainBook 必須設為 public
-	// 才能夠被 gorm.Migrator().CreateTable 感知
-	// 因為 reflect 無法對 unexported field 進行處理
-	DomainBook
-}
-
-func (s *infraBook) TableName() string {
-	return "testing_books"
-}
-
-func (s *infraBook) CollectionName() string {
-	return "testing_books"
-}
-
 type DomainBook struct {
 	SqlID    string             `gorm:"column:id;type:varchar(26);primaryKey" bson:"-"`
 	MongoID  primitive.ObjectID `gorm:"-"                                 bson:"_id"`

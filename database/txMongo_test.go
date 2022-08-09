@@ -20,11 +20,11 @@ import (
 func Test_txMongo_AutoComplete(t *testing.T) {
 	client := mongoClient(nil)
 
-	mongoBook := infraBook{}
+	collectionName := "testing_books"
 	repo := bookMongoRepo{
 		col: client.
 			Database(dbName).
-			Collection(mongoBook.CollectionName()),
+			Collection(collectionName),
 	}
 	txFactory := database.NewMongoTxFactory(client, nil)
 

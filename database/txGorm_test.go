@@ -19,13 +19,17 @@ func Test_txGorm_AutoComplete(t *testing.T) {
 	db := pgGorm(nil)
 
 	// https://gorm.io/docs/migration.html#Tables
-	sqlBook := &infraBook{}
-	if !db.Unwrap().Migrator().HasTable(sqlBook.TableName()) {
-		assert.NoError(t, db.Unwrap().Migrator().CreateTable(sqlBook))
+	tableName := "testing_books"
+	if !db.Unwrap().Migrator().HasTable(tableName) {
+		err := db.Unwrap().
+			Table(tableName).
+			Migrator().
+			CreateTable(&DomainBook{})
+		assert.NoError(t, err)
 	}
 
 	txFactory := database.NewGormTxFactory(db)
-	repo := bookGormRepo{db: db, tableName: sqlBook.TableName()}
+	repo := bookGormRepo{db: db, tableName: tableName}
 
 	tx := txFactory.CreateTx(nil)
 
