@@ -7,7 +7,10 @@ import (
 )
 
 func errorStackMarshaler(err error) interface{} {
-	return errors.Stacks(err)
+	if IsDebugLevel() {
+		return errors.Stacks(err)
+	}
+	return nil
 }
 
 func errorMarshalFunc(err error) interface{} {
