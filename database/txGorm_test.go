@@ -75,16 +75,16 @@ type bookGormRepo struct {
 }
 
 func (repo *bookGormRepo) createBook(ctx context.Context, book *DomainBook) error {
-	p := repo.db.SelectProcessor(ctx)
+	p := repo.db.ChooseProcessor(ctx)
 	return p.Table(repo.tableName).Create(book).Error
 }
 
 func (repo *bookGormRepo) updateBook(ctx context.Context, book *DomainBook) error {
-	p := repo.db.SelectProcessor(ctx)
+	p := repo.db.ChooseProcessor(ctx)
 	return p.Table(repo.tableName).Save(book).Error
 }
 
 func (repo *bookGormRepo) getBook(ctx context.Context, id string) (book DomainBook, err error) {
-	p := repo.db.SelectProcessor(ctx)
-	return book, p.Table(repo.tableName).Where("id = ?", id).Find(&book).Error
+	p := repo.db.ChooseProcessor(ctx)
+	return book, p.Table(repo.tableName).Where("id = ?", id).First(&book).Error
 }

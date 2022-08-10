@@ -24,7 +24,7 @@ func (wrapper *WrapperGorm) ContextWithTx(ctx context.Context, tx *gorm.DB) (txC
 	return context.WithValue(ctx, key, tx)
 }
 
-// SelectProcessor
+// ChooseProcessor
 // 如果找不到符合的 tx 元件, 則使用原本的 db 元件,
 // 找不到的原因:
 //
@@ -34,7 +34,7 @@ func (wrapper *WrapperGorm) ContextWithTx(ctx context.Context, tx *gorm.DB) (txC
 // 回傳值 processor, 可以代表 tx or db, 兩者型別都是  *gorm.DB
 // 其差異請參考下列網址
 // https://gorm.io/docs/method_chaining.html#New-Session-Mode
-func (wrapper *WrapperGorm) SelectProcessor(txCtx context.Context) (processor *gorm.DB) {
+func (wrapper *WrapperGorm) ChooseProcessor(txCtx context.Context) (processor *gorm.DB) {
 	if txCtx == nil {
 		return wrapper.Unwrap()
 	}
