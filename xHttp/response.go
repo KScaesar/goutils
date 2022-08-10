@@ -18,7 +18,7 @@ func NewNormalResponse(data interface{}) *Response {
 func NewErrorResponse(err error) *Response {
 	return &Response{
 		Code:    errors.Code(err),
-		Message: errors.SimpleInfo(err),
+		Message: err.Error(),
 		Data:    struct{}{},
 	}
 }
