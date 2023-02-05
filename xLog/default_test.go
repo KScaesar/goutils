@@ -16,7 +16,7 @@ import (
 //go:generate go test -trimpath -run=TestError -v github.com/KScaesar/goutils/xLog
 func TestError(t *testing.T) {
 	writer := &bytes.Buffer{}
-	Init("error", false)
+	Init("debug", false)
 	SetDefaultLogger(NewLogger(writer))
 
 	zerolog.TimestampFunc = xTest.FakeTimeNow("2021-12-14")

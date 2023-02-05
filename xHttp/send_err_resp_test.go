@@ -23,7 +23,7 @@ func TestSendErrorResponse(t *testing.T) {
 	expectedResp := `
 {
   "code": 1001,
-  "msg": "sql statement invalid",
+  "msg": "repo: sql statement invalid: system failed",
   "data": {}
 }`
 	assert.JSONEq(t, expectedResp, resp)

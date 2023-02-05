@@ -26,7 +26,7 @@ func TestBindPayload_Failed(t *testing.T) {
 	expectedResp := `
 {
   "code": 1003,
-  "msg": "bind payload: Key: 'Person.Age' Error:Field validation for 'Age' failed on the 'required' tag",
+  "msg": "bind payload: Key: 'Person.Age' Error:Field validation for 'Age' failed on the 'required' tag: invalid parameter",
   "data": {}
 }`
 	assert.JSONEq(t, expectedResp, resp)

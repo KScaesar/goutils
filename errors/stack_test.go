@@ -41,15 +41,15 @@ func TestStacks(t *testing.T) {
 
 	expectedStacks := []errors.Stack{
 		{
-			"github.com/KScaesar/goutils/errors_test.TestStacks.func1 github.com/KScaesar/goutils/errors_test/stack_test.go:18 ",
-			"github.com/KScaesar/goutils/errors_test.TestStacks.func3 github.com/KScaesar/goutils/errors_test/stack_test.go:24 ",
-			"github.com/KScaesar/goutils/errors_test.TestStacks github.com/KScaesar/goutils/errors_test/stack_test.go:39 ",
+			"github.com/KScaesar/goutils/errors_test.TestStacks.func1 github.com/KScaesar/goutils/errors/stack_test.go:18 ",
+			"github.com/KScaesar/goutils/errors_test.TestStacks.func3 github.com/KScaesar/goutils/errors/stack_test.go:24 ",
+			"github.com/KScaesar/goutils/errors_test.TestStacks github.com/KScaesar/goutils/errors/stack_test.go:39 ",
 			"testing.tRunner testing/testing.go:1123 ",
 			"runtime.goexit runtime/asm_amd64.s:1374 ",
 		},
 		{
-			"github.com/KScaesar/goutils/errors_test.TestStacks.func3 github.com/KScaesar/goutils/errors_test/stack_test.go:31 ",
-			"github.com/KScaesar/goutils/errors_test.TestStacks github.com/KScaesar/goutils/errors_test/stack_test.go:39 ",
+			"github.com/KScaesar/goutils/errors_test.TestStacks.func3 github.com/KScaesar/goutils/errors/stack_test.go:31 ",
+			"github.com/KScaesar/goutils/errors_test.TestStacks github.com/KScaesar/goutils/errors/stack_test.go:39 ",
 			"testing.tRunner testing/testing.go:1123 ",
 			"runtime.goexit runtime/asm_amd64.s:1374 ",
 		},
